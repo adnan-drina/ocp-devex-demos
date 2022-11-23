@@ -4,7 +4,7 @@ metadata:
   labels:
     app: dotnet-demo
   name: dotnet-demo
-  namespace: gitops-demo
+  namespace: dotnet-demo-dev
 spec:
   port:
     targetPort: 8080-tcp
