@@ -41,3 +41,20 @@ oc new-app mywebapp
 
 oc expose service/mywebapp
 oc get route mywebapp
+
+Now let's make a change in our app Program.cs
+Build our app locally and deploy it to OCP
+
+```shell
+dotnet publish -c Release
+oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish
+```
+After refreshing the URL we should see changes
+
+
+Now we can delete everything 
+```shell
+oc delete all -l build=mywebapp
+oc delete all -l app=mywebapp
+oc delete project my-dev-sandbox
+```
