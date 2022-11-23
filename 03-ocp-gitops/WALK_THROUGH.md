@@ -25,3 +25,6 @@ oc new-app --name=dotnet-demo 'dotnet:6.0-ubi8~https://github.com/redhat-develop
 ```shell
 oc get all -l app=dotnet-demo -o yaml > ./dotnet-demo.yaml
 ```
+
+oc new-project dotnet-demo-dev
+oc label namespace dotnet-demo-dev argocd.argoproj.io/managed-by=openshift-gitops
