@@ -1,0 +1,32 @@
+schemaVersion: 2.1.0
+metadata:
+  name: s2i-dotnetcore-ex
+  namespace: opentlc-mgr-devspaces
+attributes:
+  che-theia.eclipse.org/sidecar-policy: mergeImage
+  controller.devfile.io/devworkspace-config:
+    name: devworkspace-config
+    namespace: dotnet-pipeline-app
+  controller.devfile.io/storage-type: per-user
+  metadata-name-field: generateName
+  metadata-name-original-value: s2i-dotnetcore-ex
+  dw.metadata.annotations:
+    che.eclipse.org/che-editor: eclipse/che-theia/latest
+    che.eclipse.org/devfile-source: |
+      url:
+        location: 'https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
+      factory:
+        params: 'url=https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
+    che.eclipse.org/last-updated-timestamp: '2022-11-22T16:39:13.645Z'
+projects:
+  - git:
+      remotes:
+        origin: 'https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
+    name: s2i-dotnetcore-ex
+components:
+  - name: dev-tools
+    container:
+      image: 'registry.redhat.io/devspaces/udi-rhel8@sha256:df1961e226def97a83d403e46f7ddce9f0cdc6a97d7b894b33da718e34c5fcb3'
+      memoryLimit: 2Gi
+      mountSources: true
+      sourceMapping: /projects
