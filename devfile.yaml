@@ -1,28 +1,20 @@
 schemaVersion: 2.1.0
 metadata:
-  name: s2i-dotnetcore-ex
-  namespace: opentlc-mgr-devspaces
+  name: ocp-devex-demos
+  namespace: openshift-devspaces
 attributes:
   che-theia.eclipse.org/sidecar-policy: mergeImage
   controller.devfile.io/devworkspace-config:
     name: devworkspace-config
-    namespace: dotnet-pipeline-app
-  controller.devfile.io/storage-type: per-user
+    namespace: openshift-devspaces
+  controller.devfile.io/storage-type: common
   metadata-name-field: generateName
-  metadata-name-original-value: s2i-dotnetcore-ex
-  dw.metadata.annotations:
-    che.eclipse.org/che-editor: eclipse/che-theia/latest
-    che.eclipse.org/devfile-source: |
-      url:
-        location: 'https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
-      factory:
-        params: 'url=https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
-    che.eclipse.org/last-updated-timestamp: '2022-11-22T16:39:13.645Z'
+  metadata-name-original-value: ocp-devex-demos
 projects:
   - git:
       remotes:
-        origin: 'https://github.com/adnan-drina/s2i-dotnetcore-ex.git'
-    name: s2i-dotnetcore-ex
+        origin: 'https://github.com/adnan-drina/ocp-devex-demos.git'
+    name: ocp-devex-demos
 components:
   - name: dev-tools
     container:

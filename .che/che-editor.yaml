@@ -1,2 +1,11 @@
+#JetBrains IntelliJ IDEA
+#id: che-incubator/che-idea/next
+#id: che-incubator/che-idea/latest
+
+#JetBrains PyCharm
+#id: che-incubator/che-pycharm/next
+#id: che-incubator/che-pycharm/latest
+
+#Visual Studio Code
 id: che-incubator/che-code/insiders
 registryUrl: https://eclipse-che.github.io/che-plugin-registry/main/v3
