@@ -32,5 +32,12 @@ Now let's integrate our build process with OCP
 ```shell
 oc new-build --name=mywebapp dotnet:6.0 --binary=true
 oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish
+
+oc get builds
+oc logs build/mywebapp-1
+
 oc new-app mywebapp
 ```
+
+oc expose service/mywebapp
+oc get route mywebapp
