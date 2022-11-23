@@ -15,3 +15,13 @@ oc apply -k https://github.com/redhat-cop/gitops-catalog/openshift-gitops-operat
 ```shell
 oc get -n openshift-gitops route openshift-gitops-server -o jsonpath="{.spec.host}"
 ```
+
+```shell
+oc new-app --name=dotnet-demo 'dotnet:6.0-ubi8~https://github.com/redhat-developer/s2i-dotnetcore-ex#dotnet-6.0' \
+--build-env DOTNET_STARTUP_PROJECT=app \
+&& oc expose svc/dotnet-demo
+```
+
+```shell
+oc get all -l app=dotnet-demo -o yaml > ./dotnet-demo.yaml
+```

@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: dotnet-demo
+  name: dotnet-demo
+  namespace: gitops-demo
+spec:
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: dotnet-demo
+    weight: 100
+  wildcardPolicy: None
