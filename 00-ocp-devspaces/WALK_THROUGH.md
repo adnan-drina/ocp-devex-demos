@@ -30,17 +30,24 @@ oc new-project my-dev-sandbox
 
 Now let's integrate our build process with OCP
 ```shell
-oc new-build --name=mywebapp dotnet:6.0 --binary=true
-oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish
-
-oc get builds
-oc logs build/mywebapp-1
-
+oc new-build dotnet:6.0 --binary --name=mywebapp -l app=mywebapp
+oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish --follow
+```
+Once the build is done, we’ll deploy.
+```shell
 oc new-app mywebapp
 ```
+and run this to expose our service to the world and add a health check:
 
-oc expose service/mywebapp
+```shell
+oc expose service/mywebapp \
+&& oc set probe deployment/mywebapp  --readiness --get-url=http://:8080 --initial-delay-seconds=5 --period-seconds=5 --failure-threshold=15
+```
+
+now evryone can access our app from the web using a route
+```shell
 oc get route mywebapp
+```
 
 Now let's make a change in our app Program.cs
 Build our app locally and deploy it to OCP
@@ -54,7 +61,6 @@ After refreshing the URL we should see changes
 
 Now we can delete everything 
 ```shell
-oc delete all -l build=mywebapp
 oc delete all -l app=mywebapp
 oc delete project my-dev-sandbox
 ```
