@@ -1,15 +1,15 @@
 schemaVersion: 2.1.0
 metadata:
   name: ocp-devex-demos
-  namespace: openshift-devspaces
+  #namespace: opentlc-mgr-devspaces
 attributes:
-  che-theia.eclipse.org/sidecar-policy: mergeImage
-  controller.devfile.io/devworkspace-config:
-    name: devworkspace-config
-    namespace: openshift-devspaces
+#  che-theia.eclipse.org/sidecar-policy: mergeImage
+#  controller.devfile.io/devworkspace-config:
+#    name: devworkspace-config
+#    namespace: openshift-devspaces
   controller.devfile.io/storage-type: common
-  metadata-name-field: generateName
-  metadata-name-original-value: ocp-devex-demos
+#  metadata-name-field: generateName
+#  metadata-name-original-value: ocp-devex-demos
 projects:
   - git:
       remotes:
