@@ -4,7 +4,7 @@ For more information, please see the [official product pages](https://access.red
 ## Table of Contents
 - **[Introduction to Dev Spaces](#introduction-to-dev-spaces)**<br>
 - **[Install Dev Spaces using Operators](#lets-get-started)**<br>
-- **[Create HelloWorld app in our workspace](#lets-test-our-workspace)**<br>
+- **[Create HelloWorld app in yur workspace](#lets-test-our-workspace)**<br>
 - **[Set up a dev environment on OpenShift](#lets-set-up-our-dev-namespace)**<br>
 - **[Code Build Deploy with OpenShift Dev Spaces](#lets-code-innerloop)**<br>
 - **[Next Steps](#next-steps)**<br>
@@ -29,7 +29,7 @@ The embedded browser-based IDE is the point of access for everything running in 
 
 ---
 
-# Let's get started!
+## Let's get started!
 NOTE: All steps performed as part of this demo can be executed from your local IDE or from OpenShift DevSpaces.
 
 If you plan to use DevSpaces, please ensure that the OpenShift DevSpaces Operator is installed on your cluster.
@@ -80,7 +80,7 @@ So, after providing your Git repo with or without a devfile to Che via API or Da
 
 ---
 
-# Let's test our Workspace
+## Let's test our Workspace
 
 To test our workspace, we'll create a simple dotnet Hello World application and run ```dotnet publish``` command to prepare our application for deployment.
 
@@ -94,7 +94,7 @@ With this, our dotnet Hello World is ready for deployment to OpenShift.
 
 ---
 
-#Let's set up our dev namespace
+## Let's set up our dev namespace
 
 The first thing we'll do is connect to OpenShift API from our Workspace Terminal. We'll use our OpenShift credentials.
 
@@ -140,19 +140,19 @@ oc get route mywebapp
 
 ---
 
-#Let's code (innerloop)
+## Let's code (innerloop)
 With our Workspace and Dev project in place, we can now start our inner loop development process and rapidly code, build and deploy applications on OpenShift.
 
-###CODE:
+### CODE:
 Let's make a change in our app Program.cs
 
-###BUILD:
+### BUILD:
 Build our app locally
 ```shell
 dotnet publish -c Release
 ```
 
-###DEPLOY:
+### DEPLOY:
 By starting a new build, we instruct OpenShift to build a new container image, publish that image in the local registry and trigger a new deployment in our dev namespace.
 ```shell
 oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish
