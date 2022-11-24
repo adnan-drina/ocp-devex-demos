@@ -1,4 +1,16 @@
-# Introduction to Devspaces
+# 5-minute demo: OpenShift Dev Spaces
+For more information, please see the [official product pages](https://access.redhat.com/products/red-hat-openshift-dev-spaces).
+
+## Table of Contents
+- **[Introduction to Dev Spaces](#introduction-to-dev-spaces)**<br>
+- **[Install Dev Spaces using Operators](#lets-get-started)**<br>
+- **[Create HelloWorld app in our workspace](#lets-test-our-workspace)**<br>
+- **[Set up a dev environment on OpenShift](#lets-set-up-our-dev-namespace)**<br>
+- **[Code Build Deploy with OpenShift Dev Spaces](#lets-code-innerloop)**<br>
+- **[Next Steps](#next-steps)**<br>
+
+---
+## Introduction to Dev Spaces
 A collaborative Kubernetes-native solution for rapid application development that delivers consistent developer environments on Red Hat OpenShift to allow anyone with a browser to contribute code in under two minutes.
 
 ![OpenShift Dev Spaces](../graphics/devspaces-00.png)
