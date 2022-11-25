@@ -153,20 +153,49 @@ dotnet publish -c Release
 ```
 
 ### DEPLOY:
-By starting a new build, we instruct OpenShift to build a new container image, publish that image in the local registry and trigger a new deployment in our dev namespace.
+By starting a new build, we instruct OpenShift to build a new container image, publish that image in the OpenShift image registry and trigger a new deployment in our dev namespace.
 ```shell
 oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish
 ```
 
-After refreshing the URL we should see changes
+After build completion, we should see our changes in the web browser.
 
 ---
 
-Now we can delete everything 
+## What Next?
+
+Try it out for free [Start developing directly on OpenShift with Red Hat OpenShift Dev Spaces](https://developers.redhat.com/developer-sandbox/ide).
+You can quickly spin up a development environment with everything you need, all hosted on OpenShift.
+
+---
+
+## Key takeaways
+
+Dev Spaces
+- Accelerate onboarding of projects and developers.
+- Removes inconsistencies and “it works on my machine...” delays.
+- Protects source code by removing it from hard-to-secure laptops.
+
+And the method used to enable this is pictured below.
+
+![OpenShift Dev Spaces](../graphics/devspaces-02.png)
+
+- **Code:** Simplify on-boarding and coding with always-available, infinitely scalable developer workspaces.
+- **Collaborate more efficiently:** Cut configuration time and share workspaces easily. Integrate with the tools you already use.
+- **Secure:** Centrally host source code to improve security without sacrificing speed.
+
+
+---
+
+## Let's clean it up.
+
+We can delete all application artefacts by applying the label ``-l app=mywebapp`` and finally delete our project (kubernetes namespace).
+
 ```shell
 oc delete all -l app=mywebapp
 oc delete project my-dev-sandbox
 ```
+---
 
 links:
 https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/developing_.net_applications_in_rhel_8/using-net-core-on-ocp_gsg
