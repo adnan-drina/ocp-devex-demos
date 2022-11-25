@@ -43,26 +43,34 @@ oc get all
 
 ## Deploy a .NET Core application from GitHub
 
+For this exercise, we'll use an existing dotnet Hello World application. The source code of this application is made available via GitHub [repo](https://github.com/adnan-drina/s2i-dotnetcore-ex.git).
+
+With the ``new-app`` command we'll create application from source code in a remote Git repository.
+
+The ``new-app`` command creates a build configuration, which itself creates a new application image from our source code. 
+The ``new-app`` command typically also creates a Deployment object to deploy the new image, and a service to provide load-balanced access to the deployment running our image.
+
+In addition, we'll have to expose our service by creating a route to access our application externally via a web browser.
+
+- Let's create our app from the git repo
 ```shell
 oc new-app --name=dotnet-demo 'dotnet:6.0-ubi8~https://github.com/redhat-developer/s2i-dotnetcore-ex#dotnet-6.0' \
 --build-env DOTNET_STARTUP_PROJECT=app
 ```
-
-View the status of your app
+- View the status of the app
 ```shell
 oc status
 ```
-
-Make the .NET Core application accessible externally
+- Make the application accessible externally
 ```shell
 oc expose service s2i-dotnetcore-ex
 ```
-
-Access the service using the Route URL
+- Access the service using the Route URL
 ```shell
 ROUTE="http://$(oc get route s2i-dotnetcore-ex -o jsonpath="{.spec.host}")"
 curl -s $ROUTE | grep Welcome
 ```
+---
 
 # Clean it up
 ```shell
