@@ -24,6 +24,9 @@ The source-to-image strategy creates a new container image based on application 
 OpenShift Builds are integrated part of the OpenShift Container Platform, and dont require any installation or configuration.
 We only need to ensure that we have a connection to our OpenShift cluster and enough privileges to create a project (kubernetes namespace).
 
+**Note:** If you dont have an OpenShift cluster available, you can use [OpenShift Developer Sandbox](https://developers.redhat.com/developer-sandbox).
+The sandbox is perfect for immediate access into OpenShift. With the sandbox, you'll get free access to a shared OpenShift and Kubernetes cluster.
+
 - Login to OpenShift cluster
 ```shell
 oc login -u myuser -p mypassword
@@ -36,6 +39,7 @@ oc new-project s2i-demo
 ```shell
 oc get all
 ```
+---
 
 ## Deploy a .NET Core application from GitHub
 
