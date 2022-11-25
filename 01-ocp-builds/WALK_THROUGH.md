@@ -1,17 +1,44 @@
-# Source-to-image (S2I) build
+# 5-minute demo: OpenShift Builds
+For more information, please see the [official product documentation](https://docs.openshift.com/container-platform/4.11/cicd/builds/understanding-image-builds.html).
+
+## Table of Contents
+- **[Introduction to OpenShift Builds](#introduction-to-openshift-builds)**<br>
+- **[Set up a dev environment on OpenShift](#lets-set-things-up)**<br>
+- **[Deploy a Hello World application from GitHub](#deploy-a-net-core-application-from-github)**<br>
+- **[](#p)**<br>
+- **[](#)**<br>
+
+---
+
+## Introduction to OpenShift Builds
+A build in OpenShift Container Platform is the process of transforming input parameters into a resulting object. Most often, builds are used to transform source code into a runnable container image.
+
+### Source-to-image (S2I) build
 The source-to-image strategy creates a new container image based on application source code or application binaries. Red Hat OpenShift clones the application source code, or copies the application binaries into a compatible builder image, and assembles a new container image that is ready for deployment on the platform.
 
-### Create a new OpenShift project
+![OpenShift Builds](../graphics/builds-00.png)
+
+---
+
+## Let's set things up
+OpenShift Builds are integrated part of the OpenShift Container Platform, and dont require any installation or configuration.
+We only need to ensure that we have a connection to our OpenShift cluster and enough privileges to create a project (kubernetes namespace).
+
+- Login to OpenShift cluster
+```shell
+oc login -u myuser -p mypassword
+```
+- Create a new OpenShift project
 ```shell
 oc new-project s2i-demo
 ```
-
-Verify that the project is empty
+- Verify that the project is empty
 ```shell
 oc get all
 ```
 
-### Deploy a .NET Core application from GitHub
+## Deploy a .NET Core application from GitHub
+
 ```shell
 oc new-app --name=dotnet-demo 'dotnet:6.0-ubi8~https://github.com/redhat-developer/s2i-dotnetcore-ex#dotnet-6.0' \
 --build-env DOTNET_STARTUP_PROJECT=app
