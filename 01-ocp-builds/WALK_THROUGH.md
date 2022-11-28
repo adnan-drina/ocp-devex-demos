@@ -63,7 +63,7 @@ oc status
 ```
 - Make the application accessible externally
 ```shell
-oc expose service s2i-dotnetcore-ex
+oc expose service dotnet-demo
 ```
 - Access the service using the Route URL
 ```shell
@@ -129,6 +129,66 @@ After every application code change, we can simply start a new-build by executin
 
 ---
 
+##Triggering and modifying builds
+Now that we have our build process in place, let's see how we can modify and trigger new builds using webhooks.
+
+#### Build Triggers
+We can define different triggers in our BuildConfigs. With these triggers, we can instruct our builds to run based on specific events like a change in source code or a change in our base image.
+For example, a new image tag was made available with important security fixes, and we want to rebuild all our applications to use this new patched base image. And we can do precisely that fully automated with the use of triggers.
+
+- #### Let's try it out:
+
+Our BuildConfig, by default, has preconfigured triggers on Config and ImageChange. We can check this by describing our BuildConfig.
+
+```
+oc describe bc dotnet-demo | grep Trigger
+Triggered by:     Config, ImageChange
+```
+
+- We'll use the ImageChange trigger for our example.
+
+Now, we have to get more details on our ImageStream used by our BuildConfig.
+If we describe our BuildConfig, we'll see that it relies on images from ImageStream named dotnet:6.0-ubi8 located in namespace openshift.
+
+```
+oc describe bc dotnet-demo | grep "From Image"
+From Image:     ImageStreamTag dotnet:6.0-ubi8
+```
+
+- Now let's check this ImageStream in more detail by executing describe command.
+
+```
+oc describe istag/dotnet:6.0-ubi8 -n openshift | grep url
+url=https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8/dotnet-60/images/6.0-5.1645817052
+```
+
+From this, we see our ImageStream tag pointing to an image on access.redhat.com with tag 6.0-5.1645817052.
+
+- Let's see on access.redhat.com if there is a new tag available.
+
+And yes, the latest tag is 6.0-20.20221101100921.
+
+So, now we can update our ImageStream tag with this new image tag and check if that change will trigger a new build and deployment of our application.
+
+- Let's update our ImageStream tag.
+
+```
+oc tag registry.access.redhat.com/ubi8/dotnet-60@sha256:1d426a5b589710ae9ca64a19caef1d6349b5ffb712085b39808a9f3fae03af7a \
+dotnet:6.0-ubi8 -n openshift
+```
+
+Now, a new build should have started if we check our builds and deployments.
+By checking the status of the latest build, we should see that an image change triggered the build.
+
+```
+oc describe build dotnet-demo-4 | grep trigger
+Build trigger cause:    Image change
+```
+
+With this integration we have a very elegant way of maintaining our base images and ensuring all applications have the latest security-patched images.
+
+---
+
 ## Key takeaways
 The main advantage of using S2I for building reproducible container images is the ease of use for developers.
 ###Resources Created by the oc new-app Command
@@ -157,3 +217,15 @@ oc describe is dotnet -n openshift
 oc delete all -l app=s2i-dotnetcore-ex
 oc delete project s2i-demo
 ```
+
+
+from openshift/dotnet:6.0-ubi8
+
+6.0-5.1645817052
+6.0-20.20221101100921
+
+registry.access.redhat.com/ubi8/dotnet-60:6.0
+
+oc tag <repository/image> <image-name:tag>
+oc tag registry.access.redhat.com/ubi8/dotnet-60@sha256:1d426a5b589710ae9ca64a19caef1d6349b5ffb712085b39808a9f3fae03af7a \
+dotnet:6.0-ubi8
