@@ -3,9 +3,9 @@ For more information, please see the [official product documentation](https://do
 
 ## Table of Contents
 - **[Introduction to OpenShift Pipelines](#introduction-to-openshift-pipelines)**<br>
+- **[OpenShift Pipeline Concepts](#openshift-pipeline-concepts)**<br>
 - **[Install OpenShift Pipelines operator](#install-openshift-pipelines-operator)**<br>
 - **[Set up a dev environment on OpenShift](#set-up-a-dev-environment)**<br>
-- **[OpenShift Pipeline Concepts](#openshift-pipeline-concepts)**<br>
 - **[Let's build a pipeline](#lets-build-a-pipeline)**<br>
 - **[Key takeaways](#key-takeaways)**<br>
 
@@ -22,6 +22,21 @@ Red Hat OpenShift Pipelines is a cloud-native, continuous integration and contin
 - Red Hat OpenShift Pipelines use standard CI/CD pipeline definitions that are easy to extend and integrate with the existing Kubernetes tools, enabling you to scale on-demand.
 - You can use Red Hat OpenShift Pipelines to build images with Kubernetes tools such as Source-to-Image (S2I), Buildah, Buildpacks, and Kaniko that are portable across any Kubernetes platform.
 - You can use the OpenShift Container Platform Developer console to create Tekton resources, view logs of pipeline runs, and manage pipelines in your OpenShift Container Platform namespaces.
+
+---
+
+## OpenShift Pipeline Concepts
+Let's take a detailed view of the various pipeline concepts.
+
+![OpenShift Pipelines](../graphics/pipelines-02.png)
+
+#### Concepts that define the pipeline
+
+- Pipeline: the definition of the pipeline and the Tasks that it should perform
+- Task: a reusable, loosely coupled number of steps that perform a specific task (e.g. building a container image)
+
+#### Concepts that run the pipeline
+- PipelineRun: the execution and result of running an instance of a pipeline, which includes a number of TaskRuns
 
 ---
 
@@ -56,21 +71,6 @@ Now that we have our development project we can
 oc new-app --name=dotnet-demo 'dotnet:6.0-ubi8~https://github.com/redhat-developer/s2i-dotnetcore-ex#dotnet-6.0' \
 --build-env DOTNET_STARTUP_PROJECT=app
 ```
-
----
-
-## OpenShift Pipeline Concepts
-Let's take a detailed view of the various pipeline concepts.
-
-![OpenShift Pipelines](../graphics/pipelines-02.png)
-
-#### Concepts that define the pipeline
-
-- Pipeline: the definition of the pipeline and the Tasks that it should perform
-- Task: a reusable, loosely coupled number of steps that perform a specific task (e.g. building a container image)
-
-#### Concepts that run the pipeline
-- PipelineRun: the execution and result of running an instance of a pipeline, which includes a number of TaskRuns
 
 ---
 
