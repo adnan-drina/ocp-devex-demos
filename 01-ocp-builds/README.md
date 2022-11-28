@@ -73,14 +73,14 @@ curl -s $ROUTE | grep Welcome
 ```
 ---
 
-##Building application from binary (local) source
+## Building application from binary (local) source
 Streaming content from a local file system to the builder is called a Binary type build.
 
 To demonstrate binary builds, we'll create a simple dotnet Hello World application and run ```dotnet publish``` command to prepare our application for deployment.
 
 Then we'll log into our OpenShift cluster, create a project and create a new build object specifying a base image that best suits our application. Once created, we'll start our build by pointing it to our application project folder.
 
-- ####Create a simple dotnet Hello World application
+- #### Create a simple dotnet Hello World application
 
 ```shell
 dotnet new web -o webapp
@@ -90,19 +90,19 @@ dotnet publish -c Release
 After completion of ```dotnet publish``` command, a new folder should appear in our application directory /bin/Release/net6.0/publish.
 With this, our dotnet Hello World application is ready for deployment to OpenShift.
 
-- ####Login to OpenShift and create a project (kubernetes namespace).
+- #### Login to OpenShift and create a project (kubernetes namespace).
 ```shell
 oc login -u myuser -p mypassword
 oc new-project my-dev-sandbox
 ```
 With the dev project created, we can start preparing our application build resources.
 
-- ####Create a new binary build.
+- #### Create a new binary build.
 ```shell
 oc new-build dotnet:6.0 --binary --name=mywebapp -l app=mywebapp
 ```
 
-- ####Start the build by providing our application build artefacts.
+- #### Start the build by providing our application build artefacts.
 ```shell
 oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish --follow
 ```
@@ -112,7 +112,7 @@ oc describe is mywebapp
 ```
 With new container images in place, we can trigger the deployment of our application.
 
-- ####Deploy application
+- #### Deploy application
 ```shell
 oc new-app mywebapp
 ```
@@ -130,7 +130,7 @@ After every application code change, we can simply start a new-build by executin
 
 ---
 
-##Triggering and modifying builds
+## Triggering and modifying builds
 Now that we have our build process in place, let's see how we can modify and trigger new builds using webhooks.
 
 #### Build Triggers
@@ -192,7 +192,7 @@ With this integration we have a very elegant way of maintaining our base images 
 
 ## Key takeaways
 The main advantage of using S2I for building reproducible container images is the ease of use for developers.
-###Resources Created by the oc new-app Command
+### Resources Created by the oc new-app Command
 
 The oc new-app command adds the following resources to the current project to support building and deploying an application:
 - A build configuration to build the application container image from either source code or a Dockerfile.
@@ -200,33 +200,8 @@ The oc new-app command adds the following resources to the current project to su
 - A deployment resource using the image stream as input to create application pods.
 - A service for all ports that the application container image exposes.
 
-# Check all available image streams
-```shell
-oc get is dotnet -n openshift -o name
-```
-# View existing image tags for dotnet
-```shell
-oc get istag -n openshift | grep dotnet
-```
-# Show additional information on image and image tag
-```shell
-oc describe is dotnet -n openshift
-```
-
 ## Clean things up
 ```shell
 oc delete all -l app=s2i-dotnetcore-ex
 oc delete project s2i-demo
 ```
-
-
-from openshift/dotnet:6.0-ubi8
-
-6.0-5.1645817052
-6.0-20.20221101100921
-
-registry.access.redhat.com/ubi8/dotnet-60:6.0
-
-oc tag <repository/image> <image-name:tag>
-oc tag registry.access.redhat.com/ubi8/dotnet-60@sha256:1d426a5b589710ae9ca64a19caef1d6349b5ffb712085b39808a9f3fae03af7a \
-dotnet:6.0-ubi8
