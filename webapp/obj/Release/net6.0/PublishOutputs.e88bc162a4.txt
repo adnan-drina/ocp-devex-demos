@@ -1,0 +1,7 @@
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/webapp
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/appsettings.Development.json
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/appsettings.json
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/webapp.dll
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/webapp.deps.json
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/webapp.runtimeconfig.json
+/Users/adrina/Sandbox/ocp-devex-demos/webapp/bin/Release/net6.0/publish/webapp.pdb
