@@ -6,7 +6,8 @@ For more information, please see the [official product documentation](https://do
 - **[Set up a dev environment on OpenShift](#lets-set-things-up)**<br>
 - **[Deploy a Hello World application from GitHub](#deploy-a-net-core-application-from-github)**<br>
 - **[Deploy a Hello World application from local binary source](#building-application-from-binary-local-source)**<br>
-- **[](#)**<br>
+- **[Triggering and modifying builds](#triggering-and-modifying-builds)**<br>
+- **[Key takeaways](#key-takeaways)**<br>
 
 ---
 
