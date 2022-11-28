@@ -5,7 +5,7 @@ For more information, please see the [official product documentation](https://do
 - **[Introduction to OpenShift Builds](#introduction-to-openshift-builds)**<br>
 - **[Set up a dev environment on OpenShift](#lets-set-things-up)**<br>
 - **[Deploy a Hello World application from GitHub](#deploy-a-net-core-application-from-github)**<br>
-- **[](#p)**<br>
+- **[Deploy a Hello World application from local binary source](#building-application-from-binary-local-source)**<br>
 - **[](#)**<br>
 
 ---
@@ -72,19 +72,72 @@ curl -s $ROUTE | grep Welcome
 ```
 ---
 
-# Clean it up
+##Building application from binary (local) source
+Streaming content from a local file system to the builder is called a Binary type build.
+
+To demonstrate binary builds, we'll create a simple dotnet Hello World application and run ```dotnet publish``` command to prepare our application for deployment.
+
+Then we'll log into our OpenShift cluster, create a project and create a new build object specifying a base image that best suits our application. Once created, we'll start our build by pointing it to our application project folder.
+
+- ####Create a simple dotnet Hello World application
+
 ```shell
-oc delete all -l app=s2i-dotnetcore-ex
-oc delete project s2i-demo
+dotnet new web -o webapp
+cd webapp
+dotnet publish -c Release
+```
+After completion of ```dotnet publish``` command, a new folder should appear in our application directory /bin/Release/net6.0/publish.
+With this, our dotnet Hello World application is ready for deployment to OpenShift.
+
+- ####Login to OpenShift and create a project (kubernetes namespace).
+```shell
+oc login -u myuser -p mypassword
+oc new-project my-dev-sandbox
+```
+With the dev project created, we can start preparing our application build resources.
+
+- ####Create a new binary build.
+```shell
+oc new-build dotnet:6.0 --binary --name=mywebapp -l app=mywebapp
 ```
 
-# Resources Created by the oc new-app Command
-The oc new-app command adds the following resources to the current project to support building and deploying an application:
-   - A build configuration to build the application container image from either source code or a Dockerfile.
-   - An image stream pointing to either the generated image in the internal registry or to an existing image in an external registry.
-   - A deployment resource using the image stream as input to create application pods.
-   - A service for all ports that the application container image exposes.
+- ####Start the build by providing our application build artefacts.
+```shell
+oc start-build mywebapp --from-dir=./bin/Release/net6.0/publish --follow
+```
+After build completion, a newly created container image will be available for deployment. We can check our container images by describing image stream objects on OpenShift.
+```shell
+oc describe is mywebapp
+```
+With new container images in place, we can trigger the deployment of our application.
 
+- ####Deploy application
+```shell
+oc new-app mywebapp
+```
+We'll also run the following command to expose our service to the world.
+```shell
+oc expose service/mywebapp 
+```
+Now everyone can access our app from the web using a route
+```shell
+oc get route mywebapp
+```
+
+With this, we have deployed our application from the local binary source. 
+After every application code change, we can simply start a new-build by executing the ```oc start-build mywebapp``` command.
+
+---
+
+## Key takeaways
+The main advantage of using S2I for building reproducible container images is the ease of use for developers.
+###Resources Created by the oc new-app Command
+
+The oc new-app command adds the following resources to the current project to support building and deploying an application:
+- A build configuration to build the application container image from either source code or a Dockerfile.
+- An image stream pointing to either the generated image in the internal registry or to an existing image in an external registry.
+- A deployment resource using the image stream as input to create application pods.
+- A service for all ports that the application container image exposes.
 
 # Check all available image streams
 ```shell
@@ -97,4 +150,10 @@ oc get istag -n openshift | grep dotnet
 # Show additional information on image and image tag
 ```shell
 oc describe is dotnet -n openshift
+```
+
+## Clean things up
+```shell
+oc delete all -l app=s2i-dotnetcore-ex
+oc delete project s2i-demo
 ```
