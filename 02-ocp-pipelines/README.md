@@ -7,7 +7,7 @@ For more information, please see the [official product documentation](https://do
 - **[Set up a dev environment on OpenShift](#set-up-a-dev-environment)**<br>
 - **[OpenShift Pipeline Concepts](#openshift-pipeline-concepts)**<br>
 - **[Let's build a pipeline](#lets-build-a-pipeline)**<br>
-- **[](#)**<br>
+- **[Key takeaways](#key-takeaways)**<br>
 
 ---
 
