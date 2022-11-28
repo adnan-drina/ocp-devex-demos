@@ -215,7 +215,7 @@ oc adm policy add-role-to-user edit -z pipeline
 
 - Run the pipeline
 ```shell
-oc create -f ./02-ocp-pipelines/run-demo-pipeline.yaml
+oc create -f ./02-ocp-pipelines/demo-pipeline-run.yaml
 ```
 
 ---
