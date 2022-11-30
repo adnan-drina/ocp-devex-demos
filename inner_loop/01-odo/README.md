@@ -6,7 +6,9 @@ For more information, please see the [official product documentation](https://ac
 - **[Set up a dev environment on OpenShift](#lets-set-things-up)**<br>
 - **[Initialize your odo workspace](#initializing-your-application)**<br>
 - **[Developing Continuously with odo](#developing-your-application-continuously)**<br>
-- **[](#)**<br>
+- **[Making application changes](#lets-make-some-code-changes)**<br>
+- **[Key takeaways](#key-takeaways)**<br>
+- **[Cleaning up](#clean-things-up)**<br>
 ---
 
 ## Introduction to odo
@@ -39,7 +41,9 @@ Now that the cli tools are available on your machine, let's create an example ap
 
 ## Create a simple dotnet Hello World application
 
-In this case, we will generate a simple MVC application that we can use in our example.
+In this case, we will generate a simple MVC application that we can use in our example. 
+
+>**WARNING**: odo is a opinionated tool and assumes your application is named "app" 
 
 ```shell
 dotnet new mvc --name app
@@ -120,6 +124,14 @@ To start editing your component, use 'odo dev' and open this folder in your favo
 Changes will be directly reflected on the cluster.
  ```
 
+
+>**NOTE**: Alternatively you can also specify some options directly using commandline flags:
+>
+>```shell
+>odo init --devfile dotnet60 --name=my-dotnet-app
+>```
+><br>
+<br>
 A devfile.yaml has now been added to your directory and now you're ready to start development.
 
 With this you have seen how easy it is to get started with your framework/language of choice. From a developer perspective we can get started with minimal kubernetes knowledge.
