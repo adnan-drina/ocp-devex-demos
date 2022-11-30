@@ -143,3 +143,15 @@ Create your serverless deployment:
 ```shell
 kn service create hello --image=quay.io/bentaljaard/dotnet-helloworld:latest --port 8080    
 ```
+
+Verify your deployment in the developer topology view:
+
+![serverless02](../../graphics/serverless-02.png)
+
+Open the URL for the service:
+
+![serverless03](../../graphics/serverless-03.png)
+
+Your service returns Hello World!
+
+![serverless04](../../graphics/serverless-04.png)
