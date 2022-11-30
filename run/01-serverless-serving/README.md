@@ -3,8 +3,10 @@ For more information, please see the [official product documentation](https://do
 
 ## Table of Contents
 - **[Introduction to serverless](#introduction-to-serverless)**<br>
-- **[Set up a dev environment on OpenShift](#lets-set-things-up)**<br>
-- **[](#)**<br>
+- **[Pre-Requisites](#pre-requisites)**<br>
+- **[Creating an application](#creating-an-application)**<br>
+- **[Creating a container](#creating-a-container)**<br>
+- **[Creating a serverless deployment](#creating-a-serverless-deployment)**<br>
 ---
 
 ## Introduction to serverless
