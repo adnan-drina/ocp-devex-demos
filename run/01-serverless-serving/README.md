@@ -16,9 +16,24 @@ OpenShift Serverless .....
 ## Pre-requisites
 
 * Installed serverless operator
+
+```shell
+oc apply -f ./run/01-serverless-serving/serverless-operator-setup/01-serverless-operator-namespace.yaml
+oc apply -f ./run/01-serverless-serving/serverless-operator-setup/01-serverless-operator-sub.yaml
+```
+**NOTE**: These components might take a few minutes to complete the install, please verify the status in "installed operators" using the web console.
+
 * Configured knative serving
+
+```shell
+oc apply -f ./run/01-serverless-serving/knative-serving-setup/knative-serving-instance.yaml
+```
+**NOTE**: These components might take a few minutes to complete the install, please verify that all pods are running in the knative-serving namespace using the web console.
+
 * Podman or docker is available to build and push containers (note this instance needs to match the target platform architecture)
 * Have a publically accessible registry available, eg. quay.io
+* You have the [odo](https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/odo/) cli installed
+* You have the [kn](https://docs.openshift.com/container-platform/4.11/serverless/cli_tools/installing-kn.html) cli installed
 
 ## Creating an application
 
@@ -141,7 +156,18 @@ to build a new example application in Ruby. Or use kubectl to deploy a simple Ku
 Create your serverless deployment:
 
 ```shell
-kn service create hello --image=quay.io/bentaljaard/dotnet-helloworld:latest --port 8080    
+$ kn service create hello --image=quay.io/bentaljaard/dotnet-helloworld:latest --port 8080    
+Creating service 'hello' in namespace 'kn-dotnet':
+
+  0.044s The Route is still working to reflect the latest desired specification.
+  0.076s Configuration "hello" is waiting for a Revision to become ready.
+  4.583s ...
+  4.652s Ingress has not yet been reconciled.
+  4.689s Waiting for load balancer to be ready
+  4.939s Ready to serve.
+
+Service 'hello' created to latest revision 'hello-00001' is available at URL:
+https://hello-kn-dotnet.apps.sno-local.phybernet.org
 ```
 
 Verify your deployment in the developer topology view:
