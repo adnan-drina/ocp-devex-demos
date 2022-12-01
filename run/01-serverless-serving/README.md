@@ -1,4 +1,4 @@
-# 5-minute demo: Serverless (KNative Serving)
+# 5-minute demo: Serverless (Knative Serving)
 For more information, please see the [official product documentation](https://docs.openshift.com/container-platform/4.11/serverless/serverless-release-notes.html)
 
 ## Table of Contents
