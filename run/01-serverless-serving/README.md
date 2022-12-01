@@ -7,6 +7,8 @@ For more information, please see the [official product documentation](https://do
 - **[Creating an application](#creating-an-application)**<br>
 - **[Creating a container](#creating-a-container)**<br>
 - **[Creating a serverless deployment](#creating-a-serverless-deployment)**<br>
+- **[Key takeaways](#key-takeaways)**<br>
+- **[Cleaning up](#clean-things-up)**<br>
 ---
 
 ## Introduction to serverless
@@ -14,6 +16,7 @@ OpenShift Serverless .....
 
 ![serverless01](../../graphics/serverless-01.png)
 
+---
 
 ## Pre-requisites
 
@@ -36,6 +39,8 @@ oc apply -f ./run/01-serverless-serving/knative-serving-setup/knative-serving-in
 * Have a publically accessible registry available, eg. quay.io
 * You have the [odo](https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/odo/) cli installed
 * You have the [kn](https://docs.openshift.com/container-platform/4.11/serverless/cli_tools/installing-kn.html) cli installed
+
+---
 
 ## Creating an application
 
@@ -61,7 +66,11 @@ odo dev
 
 Once dev is done....
 
+---
+
 ## Creating a container
+
+In order to deploy our serverless service, we need a container to be created that we will use when we deploy. This requires some understanding on Dockerfiles.
 
 Add dockerfile:
 
@@ -78,7 +87,15 @@ COPY --from=builder /opt/app-root/src/bin /opt/app-root/src/bin
 WORKDIR /opt/app-root/src/bin/Release/net6.0/publish
 CMD ["dotnet", "app.dll"]
 ```
+
+In this example we have created a multi-stage Dockerfile, that allows us to build our application in a build container and afterwards inject our application binaries into a runtime container. This gives you the flexibility to use a custom or minimal runtime image based on your corporate standards.
+
+---
+
 ## Building a container
+
+In this section we will build our container to be used in our serverless deployment. There are multiple ways of doing this and we will show you 2 examples. The first option will guide you through the process of modifying your devfile to allow odo to build the image and the second option will make use of podman/docker directly.
+
 ### Option 1:
 edit devfile.yaml
 
@@ -136,10 +153,13 @@ then push your container image to the registry:
 ```shell
 podman push quay.io/bentaljaard/dotnet-helloworld
 ```
+---
 
 ## Creating a serverless deployment
 
-Let's prepare a new Openshift namespace to deploy our serverless function:
+In this section we will deploy the container that we created as a serverless service using knative.
+
+Let's prepare a new Openshift namespace to deploy our serverless service:
 
 ```shell
 $ oc new-project kn-dotnet
@@ -172,6 +192,9 @@ Service 'hello' created to latest revision 'hello-00001' is available at URL:
 https://hello-kn-dotnet.apps.sno-local.phybernet.org
 ```
 
+As you can see, it is easy to deploy our container as a serverless service and all the complexity of which kubernetes manifests/object need to be created are removed for a developer.
+
+
 Verify your deployment in the developer topology view:
 
 ![serverless02](../../graphics/serverless-02.png)
@@ -183,3 +206,15 @@ Open the URL for the service:
 Your service returns Hello World!
 
 ![serverless04](../../graphics/serverless-04.png)
+
+## Key Takeaways
+
+* Serverless serving allow you to spin down your containers to zero or autoscales on demand, however when scaling from zero there will be a delay, so ensure that your container can start up rapidly.
+* It improves the utilization and deployment density on your environment allowing your to make better use of your environment resources
+* Knative makes it easy to turn a container into a serverless deployment
+
+## Clean things up
+
+```shell
+oc delete project kn-dotnet
+```
