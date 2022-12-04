@@ -152,7 +152,7 @@ Here, we'll learn how to prevent cascading failures in a distributed environment
 
 - [Install demo application and add it to the mesh](#install-demo-application-and-add-it-to-the-mesh)
   - [Create application namespaces](#create-application-namespaces)
-  - [Create ServiceMeshMemberRoll](#create-servicemeshmemberroll)
+  - [Add application namespaces to the mesh](#create-servicemeshmemberroll)
   - [Deploy application services](#deploy-application-services)
   - [Enabling automatic sidecar injection](#enabling-automatic-sidecar-injection)
   - [Expose a service](#expose-a-service)
@@ -233,7 +233,7 @@ oc rollout status -w dc/catalog-springboot -n catalog
 ```
 This should also take about 1 minute to finish. 
 
-When it’s done, verify that the inventory-database is running with 2 pods (2/2 in the READY column) with this command:
+When it’s done, verify that the inventory-database is running with 2 containers (2/2 in the READY column) with this command:
 ```shell
 oc get pods -n catalog --field-selector status.phase=Running &&\
 oc get pods -n inventory --field-selector status.phase=Running
@@ -302,13 +302,6 @@ Here, we will learn the advanced use cases of service mesh. The lab showcases fe
 
 
 Let’s inject a failure (500 status) in 50% of requests to inventory microservices. Edit inventory-default.yaml as below.
-
-Open the empty inventory-vs-fault.yaml file in inventory/rules directory and copy the following codes.
-
-while true; \
-do curl -o /dev/null -s ${GATEWAY_URL}; \
-sleep 2; done
-
 
 siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
 
