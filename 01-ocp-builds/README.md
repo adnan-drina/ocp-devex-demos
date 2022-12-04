@@ -141,7 +141,7 @@ For example, a new image tag was made available with important security fixes, a
 
 Our BuildConfig, by default, has preconfigured triggers on Config and ImageChange. We can check this by describing our BuildConfig.
 
-```
+```shell
 oc describe bc dotnet-demo | grep Trigger
 Triggered by:     Config, ImageChange
 ```
@@ -151,14 +151,14 @@ Triggered by:     Config, ImageChange
 Now, we have to get more details on our ImageStream used by our BuildConfig.
 If we describe our BuildConfig, we'll see that it relies on images from ImageStream named dotnet:6.0-ubi8 located in namespace openshift.
 
-```
+```shell
 oc describe bc dotnet-demo | grep "From Image"
 From Image:     ImageStreamTag dotnet:6.0-ubi8
 ```
 
 - Now let's check this ImageStream in more detail by executing describe command.
 
-```
+```shell
 oc describe istag/dotnet:6.0-ubi8 -n openshift | grep url
 url=https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8/dotnet-60/images/6.0-5.1645817052
 ```
@@ -173,7 +173,7 @@ So, now we can update our ImageStream tag with this new image tag and check if t
 
 - Let's update our ImageStream tag.
 
-```
+```shell
 oc tag registry.access.redhat.com/ubi8/dotnet-60@sha256:1d426a5b589710ae9ca64a19caef1d6349b5ffb712085b39808a9f3fae03af7a \
 dotnet:6.0-ubi8 -n openshift
 ```
@@ -181,8 +181,8 @@ dotnet:6.0-ubi8 -n openshift
 Now, a new build should have started if we check our builds and deployments.
 By checking the status of the latest build, we should see that an image change triggered the build.
 
-```
-oc describe build dotnet-demo-4 | grep trigger
+```shell
+oc describe build dotnet-demo-2 | grep trigger
 Build trigger cause:    Image change
 ```
 
