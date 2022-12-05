@@ -38,6 +38,7 @@ nb-configuration.xml
 #local dev project
 dump
 webapp
+eshop-demo
 04-ocp-service-mesh/demo/catalog/target
 04-ocp-service-mesh/demo/inventory/target
 

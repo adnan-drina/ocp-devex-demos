@@ -147,8 +147,7 @@ wasm-cacher-istio-system-555fd6f7df-6qrnm   1/1     Running   0          2m1s
 ---
 
 ## Getting Started with Service Mesh
-
-Here, we'll learn how to prevent cascading failures in a distributed environment, detect misbehaving services, and avoid having to implement resiliency and monitoring in our business logic.
+In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Grafana, and we'll see how to configure basic Istio functionalities such as VirtualService and A/B Testing.
 
 - [Install demo application and add it to the mesh](#install-demo-application-and-add-it-to-the-mesh)
   - [Create application namespaces](#create-application-namespaces)
@@ -156,8 +155,7 @@ Here, we'll learn how to prevent cascading failures in a distributed environment
   - [Deploy application services](#deploy-application-services)
   - [Enabling automatic sidecar injection](#enabling-automatic-sidecar-injection)
   - [Expose a service](#expose-a-service)
-- [Visualize the ingress traffic with Kiali](#)
-- 
+- [Observe your services with Kiali, Prometheus, Jaeger and Grafana](#)
 
 ### Install demo application and add it to the mesh
 We'll install a sample demo application into the system.
@@ -276,21 +274,160 @@ Test a page that has been explicitly exposed.
 ```shell
 curl -s -I "$GATEWAY_URL/services/products"
 ```
-
 The expected result is 200.
 
-====
+Now let's keep those requests coming
+```shell
+for i in {1..1000} ; do curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY_URL ; sleep 2 ; done
 
 while true; \
 do curl -o /dev/null -s ${GATEWAY_URL}; \
 sleep 2; done
+```
+This command will endlessly access the application and report the HTTP status result in a separate terminal window. The script should return an endless 200.
 
-Kiali
-Grafana
-Jaeger
-Prometheus
+With this application load running, metrics will become much more interesting in the next few steps.
 
-======
+### Observe your services with Kiali, Prometheus, Jaeger and Grafana
+
+#### Examine Kiali
+Kiali allows you to manage and monitor your mesh from a single UI. This UI will allow you to view configurations, monitor traffic flow and health, and analyze traces.
+
+Open the Kiali console.
+
+- Get Kiali URL from the route in istio-system project namespace
+```shell
+KIALI_URL="http://$(oc get route kiali -o jsonpath="{.spec.host}" -n istio-system)"
+```
+Open Kiali in your browser
+```shell
+open -a "Google Chrome" $KIALI_URL
+```
+![OpenShift Service Mesh](../graphics/service-mesh-08.jpeg)
+
+- Kiali - Service Graph
+
+Click on the Graph page on the left and check Traffic Animation in Display. 
+You’ll also need to select the application projects in the Namespace dropdown at the top
+
+The graph shows all the microservices, connected by the requests going through them. 
+On this page, we can see how services interact with each other. 
+
+- Kiali - Applications
+
+Click on Applications menu in the left navigation. 
+On this page you can view a listing of all the services that are running in the cluster, and additional information about them, such as health status
+
+- Kiali - Workloads
+
+Click on the Workloads menu in the left navigation. 
+On this page you can view a listing of all the workloads that are present in your application.
+
+- Kiali - Services
+
+Click on Services menu in the left navigation. 
+Here, you can see the listing of all services.
+
+- Kiali - Istio Config
+
+Click on Istio Config menu in the left navigation. 
+Here, you can see the listing of all Istio types.
+
+- Kiali - Distributed Tracing
+
+Kiali also features integration with Jaeger. 
+This lets you follow the path of a request through various microservices that make up an application (without having to update the app itself!).
+
+To view the traces being generated, click on the Distributed Tracing link on the left or run the following commands:
+```shell
+JAEGER_URL="https://$(oc get route jaeger -o jsonpath="{.spec.host}" -n istio-system)"
+```
+Open Jaeger in your browser
+```shell
+open -a "Google Chrome" $JAEGER_URL
+```
+
+#### Querying Metrics with Prometheus
+Prometheus will periodically scrape applications to retrieve their metrics (by default on the /metrics endpoint of the application). The Prometheus add-on for Istio is a Prometheus server that comes pre-configured to scrape Istio Mixer endpoints to collect its exposed metrics. It provides a mechanism for persistent storage and querying of those metrics metrics.
+
+Open the Prometheus console and click on Log in with OpenShift.
+You should see OpenShift Login screen. 
+Enter the username and password as below and click Log In. 
+If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
+
+```shell
+PROMETHEUS_URL="https://$(oc get route prometheus -o jsonpath="{.spec.host}" -n istio-system)"
+```
+Open Jaeger in your browser
+```shell
+open -a "Google Chrome" $PROMETHEUS_URL
+```
+
+- In the Expression input box at the top of the web page, enter the following text.
+
+```shell
+istio_request_duration_milliseconds_count
+```
+Then, click the Execute button.
+
+You should see a listing of each of the application’s services along with a count of how many times it was accessed.
+You can also graph the results over time by clicking on the Graph tab
+
+Other expressions to try:
+
+- Total count of all requests to productpage service:
+
+```shell
+istio_request_duration_milliseconds_count{destination_service=~"catalog-springboot.*"}
+```
+- Total count of all requests to v3 of the reviews service:
+
+```shell
+istio_request_duration_milliseconds_count{destination_service=~"reviews.*", destination_version="v3"}
+```
+
+- Rate of requests over the past 5 minutes to all productpage services:
+
+```shell
+rate(istio_request_duration_milliseconds_count{destination_service=~"inventory.*", response_code="200"}[5m])
+```
+
+There are many, many different queries you can perform to extract the data you need. 
+Consult the [Prometheus documentation](https://prometheus.io/docs) for more detail.
+
+
+#### Visualizing Metrics with Grafana
+Grafana provides a visual representation of many available Prometheus metrics extracted from the Istio data plane and can be used to quickly spot problems and take action.
+
+- Open Grafana console
+```shell
+GRAFANA_URL="https://$(oc get route grafana -o jsonpath="{.spec.host}" -n istio-system)"
+```
+Open Grafana in your browser
+```shell
+open -a "Google Chrome" $GRAFANA_URL
+```
+You should see OpenShift Login screen. Enter the username and password as below and click Log In. If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
+
+![OpenShift Service Mesh](../graphics/service-mesh-09.jpeg)
+
+- Istio Mesh Metrics
+Select Dashboard Icon > Manage > Istio > Istio Mesh Dashboard to see Istio mesh metrics
+
+![OpenShift Service Mesh](../graphics/service-mesh-10.jpeg)
+
+The Grafana Dashboard for Istio consists of three main sections:
+
+- A Global Summary View provides a high-level summary of HTTP requests flowing through the service mesh.
+- A Mesh Summary View provides slightly more detail than the Global Summary View, allowing per-service filtering and selection.
+- Individual Services View provides metrics about requests and responses for each individual service within the mesh (HTTP and TCP).
+
+- Istio Workload Metrics
+To switch to the workloads dashboard, select Dashboard Icon > Manage > Istio > Istio Workload Dashboard from the drop-down list in the top left corner of the screen.
+
+This dashboard shows workload’s metrics, and metrics for client-(inbound) and service (outbound) workloads. You can switch to a different workload, ot filter metrics by inbound or outbound workloads by using drop-down lists at the top of the dashboard.
+
+For more on how to create, configure, and edit dashboards, please see the [Grafana documentation](http://docs.grafana.org/).
 
 ## Advanced Service Mesh Development
 
