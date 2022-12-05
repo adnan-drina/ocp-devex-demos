@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-default
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - catalog/catalog-gateway
+  http:
+    - route:
+      - destination:
+          host: inventory
+          port:
+            number: 80

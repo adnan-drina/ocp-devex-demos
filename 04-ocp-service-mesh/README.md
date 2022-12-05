@@ -155,7 +155,10 @@ In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Graf
   - [Deploy application services](#deploy-application-services)
   - [Enabling automatic sidecar injection](#enabling-automatic-sidecar-injection)
   - [Expose a service](#expose-a-service)
-- [Observe your services with Kiali, Prometheus, Jaeger and Grafana](#)
+- [Observe your services with Kiali, Prometheus, Jaeger and Grafana](#observe-your-services-with-kiali-prometheus-jaeger-and-grafana)
+  - [Examine Kiali](#examine-kiali)
+  - [Querying Metrics with Prometheus](#querying-metrics-with-prometheus)
+  - [Visualizing Metrics with Grafana](#visualizing-metrics-with-grafana)
 
 ### Install demo application and add it to the mesh
 We'll install a sample demo application into the system.
@@ -214,7 +217,12 @@ inventory-database-1-z96f5   1/1     Running   0          5m35s
 
 - #### Enabling automatic sidecar injection
 
-First, do the databases and wait for them to be re-deployed:
+Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application’s pod to provide Service Mesh capabilities to the application. 
+We'll enable automatic sidecar injection using the annotation. 
+This ensures that your application contains the appropriate configuration for the Service Mesh upon deployment. 
+This method requires fewer privileges and does not conflict with other OpenShift capabilities such as builder pods.
+
+First, we'll annotate our database deployments and wait for them to roll out new pods:
 ```shell
 oc patch dc/inventory-database -n inventory --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
 oc patch dc/catalog-database -n catalog --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
@@ -280,6 +288,7 @@ Now let's keep those requests coming
 ```shell
 for i in {1..1000} ; do curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY_URL ; sleep 2 ; done
 
+#or like this
 while true; \
 do curl -o /dev/null -s ${GATEWAY_URL}; \
 sleep 2; done
@@ -429,16 +438,205 @@ This dashboard shows workload’s metrics, and metrics for client-(inbound) and 
 
 For more on how to create, configure, and edit dashboards, please see the [Grafana documentation](http://docs.grafana.org/).
 
+---
 ## Advanced Service Mesh Development
 
-Here, we will learn the advanced use cases of service mesh. The lab showcases features:
-- Fault Injection
+Here, we will learn the advanced use cases of service mesh. 
+Our demo will showcase features such as:
+- [Fault Injection](#fault-injection)
 - Traffic Shifting
-- Circuit Breaking
+- [Circuit Breaking](#Enable Circuit Breaker)
 - Rate Limiting
 
+These features are important for any distributed applications built on top of Kubernetes/Openshift.
 
-Let’s inject a failure (500 status) in 50% of requests to inventory microservices. Edit inventory-default.yaml as below.
+### Fault Injection
+
+In this demo, we'll show how to use Fault Injection to test the end-to-end failure recovery capability of the application as a whole.
+
+Istio provides a set of failure recovery features that can be taken advantage of by the services in an application.
+Features include:
+
+- Timeouts to minimize wait times for slow services
+- Bounded retries with timeout budgets and variable jitter between retries
+- Limits on the number of concurrent connections and requests to upstream services
+- Active (periodic) health checks on each member of the load-balancing pool
+- Fine-grained circuit breakers (passive health checks) – applied per instance in the load-balancing pool
+
+These features can be dynamically configured at runtime through Istio's traffic management rules.
+
+Istio also enables protocol-specific fault injection into the network by delaying or corrupting packets at the TCP layer.
+
+Two types of faults can be injected:
+
+- Delays are timing failures. They mimic increased network latency or an overloaded upstream service.
+- Aborts are crash failures. They mimic failures in upstream services. Aborts usually manifest in the form of HTTP error codes or TCP connection failures.
+
+To test our application microservices for resiliency, we will inject a failure in 50% of the requests to the inventory service, causing the service to appear to fail (and return HTTP 5xx errors) half of the time.
+
+Note: Make sure our GATEWAY_URL is available
+```shell
+export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')
+```
+
+Create the new VirtualService to direct traffic to the inventory service by running the following command
+```shell
+oc apply -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-default
+spec:
+  hosts:
+  - "${GATEWAY_URL}"
+  gateways:
+  - catalog/catalog-gateway
+  http:
+    - match:
+      - uri:
+          exact: /services/inventory
+      - uri:
+          exact: /
+      route:
+      - destination:
+          host: inventory
+          port:
+            number: 80
+EOF
+```
+
+Let’s inject a failure (500 status) in 50% of requests to inventory microservices.
+Before creating a new inventory-fault VirtualService, we need to delete the existing inventory-default virtualService.
+```shell
+oc delete virtualservice/inventory-default -n inventory 
+```
+
+```shell
+oc apply -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-fault
+spec:
+  hosts:
+  - "${GATEWAY_URL}"
+  gateways:
+  - catalog/catalog-gateway
+  http:
+    - fault:
+         abort:
+           httpStatus: 500
+           percentage:
+             value: 50
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+EOF
+```
+
+Let’s find out if the fault injection works correctly via accessing the CoolStore Inventory page once again. 
+You will see that the Status of CoolStore Inventory continues to change between DEAD and OK.
+
+![OpenShift Service Mesh](../graphics/service-mesh-11.jpeg)
+
+Back on the Kiali Graph page and you will see red traffic from istio-ingressgateway as well as around 50% of requests are displayed as 5xx on the right side, HTTP Traffic. 
+It may not be exactly 50% since some traffic is coming from the catalog and ingress gateway at the same time, but it will approach 50% over time.
+
+![OpenShift Service Mesh](../graphics/service-mesh-12.jpeg)
+
+Let’s now add a 5 second delay for the inventory service.
+
+First, delete the existing inventory-fault VirtualService:
+```shell
+oc delete virtualservice/inventory-fault -n inventory
+```
+
+Then create a new virtualservice
+```shell
+oc apply -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-fault-delay
+spec:
+  hosts:
+  - "${GATEWAY_URL}"
+  gateways:
+  - catalog/catalog-gateway
+  http:
+    - fault:
+         delay:
+           fixedDelay: 5s
+           percentage:
+             value: 100
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+EOF
+```
+
+Go to the Kiali Graph you opened earlier and you will see that the green traffic from istio-ingressgateway is delayed for requests coming from inventory service.
+
+Click on the "edge" (the line between istio-ingressgateway and inventory) and then scroll to the bottom of the right-side graph showing the HTTP Request Response Time. Hover over the black average data point to confirm that the average response time is about 5000ms (5 seconds) as expected
+
+![OpenShift Service Mesh](../graphics/service-mesh-13.jpeg)
+
+Before we will move to the next step, clean up the fault injection and set the default virtual service once again using these commands in a Terminal:
+
+```shell
+oc delete virtualservice/inventory-fault-delay -n inventory && \
+oc create -f ./demo/inventory/rules/inventory-default.yaml -n inventory
+```
+
+### Enable Circuit Breaker
+
+In this demo, we'll configure a Circuit Breaker to protect the calls to the Inventory service.
+If the Inventory service gets overloaded due to call volume, Istio will limit future calls to the service instances to allow them to recover.
+
+Istio enforces circuit breaking limits at the network level as opposed to having to configure and code each application independently.
+
+Istio supports various types of conditions that would trigger a circuit break:
+
+- Cluster maximum connections: The maximum number of connections that Istio will establish to all hosts in a cluster.
+- Cluster maximum pending requests: The maximum number of requests that will be queued while waiting for a ready connection pool connection.
+- Cluster maximum requests: The maximum number of requests that can be outstanding to all hosts in a cluster at any given time.
+- Cluster maximum active retries: The maximum number of retries that can be outstanding to all hosts in a cluster at any given time.
+
+Each circuit breaking limit is configurable and tracked per upstream cluster and priority basis. This allows different components of the distributed system to be tuned independently and have different limits. See Envoy's circuit breaker documentation for more details.
+
+Let's add a circuit breaker to the calls to the Inventory service.
+Instead of using a VirtualService object, circuit breakers in Istio are defined as DestinationRule objects.
+DestinationRule defines policies that apply to traffic intended for a service after routing has occurred.
+These rules specify configuration for load balancing, connection pool size from the sidecar, and outlier detection settings to detect and evict unhealthy hosts from the load balancing pool.
+
+Run the following command to enable circuit breaking:
+```shell
+oc apply -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: inventory-cb
+spec:
+  host: inventory
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 1
+      http:
+        http1MaxPendingRequests: 1
+        maxRequestsPerConnection: 1
+EOF
+```
+
+We set the Inventory service’s maximum connections to 1 and maximum pending requests to 1. 
+Thus, if we send more than 2 requests within a short period of time to the inventory service, 1 will go through, 1 will be pending, and any additional requests will be denied until the pending request is processed. 
+Furthermore, it will detect any hosts that return a server error (HTTP 5xx) and eject the pod out of the load balancing pool for 15 minutes. 
+You can visit here to check the [Istio spec](https://istio.io/docs/tasks/traffic-management/circuit-breaking) for more details on what each configuration parameter does.
+
+
 
 siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
-

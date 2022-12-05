@@ -4,7 +4,7 @@ metadata:
   name: inventory-fault
 spec:
   hosts:
-    - "istio-ingressgateway-istio-system.apps.cluster-dvq5p.dvq5p.sandbox1404.opentlc.com"
+    - "${GATEWAY_URL}"
   gateways:
     - catalog/catalog-gateway
   http:
