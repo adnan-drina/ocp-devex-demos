@@ -357,7 +357,7 @@ open -a "Google Chrome" $JAEGER_URL
 ```
 
 #### Querying Metrics with Prometheus
-Prometheus will periodically scrape applications to retrieve their metrics (by default on the /metrics endpoint of the application). The Prometheus add-on for Istio is a Prometheus server that comes pre-configured to scrape Istio Mixer endpoints to collect its exposed metrics. It provides a mechanism for persistent storage and querying of those metrics metrics.
+Prometheus will periodically scrape applications to retrieve their metrics (by default on the /metrics endpoint of the application). The Prometheus add-on for Istio is a Prometheus server that comes pre-configured to scrape Istio Mixer endpoints to collect its exposed metrics. It provides a mechanism for persistent storage and querying of those metrics.
 
 Open the Prometheus console and click on Log in with OpenShift.
 You should see OpenShift Login screen. 
