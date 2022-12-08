@@ -13,7 +13,7 @@ For more information, please see the [official product pages](https://access.red
 ## Introduction to Dev Spaces
 A collaborative Kubernetes-native solution for rapid application development that delivers consistent developer environments on Red Hat OpenShift to allow anyone with a browser to contribute code in under two minutes.
 
-![OpenShift Dev Spaces](../graphics/devspaces-00.png)
+![OpenShift Dev Spaces](../../graphics/devspaces-00.png)
 
 ---
 Red Hat OpenShift Dev Spaces provides developer workspaces with everything you need to code, build, test, run, and debug applications:
@@ -76,7 +76,7 @@ You do not need a devfile to start a workspace. If you do not include a devfile 
 
 So, after providing your Git repo with or without a devfile to Che via API or Dashboard, the DevWorkspace Operator will provision your Workspace as a set of containers running on OpenShift, and we'll access and execute commands in our Workspace using our favourite web browser.
 
-![OpenShift Dev Spaces](../graphics/devspaces-01.png)
+![OpenShift Dev Spaces](../../graphics/devspaces-01.png)
 
 ---
 
@@ -178,7 +178,7 @@ Dev Spaces
 
 And the method used to enable this is pictured below.
 
-![OpenShift Dev Spaces](../graphics/devspaces-02.png)
+![OpenShift Dev Spaces](../../graphics/devspaces-02.png)
 
 - **Code:** Simplify on-boarding and coding with always-available, infinitely scalable developer workspaces.
 - **Collaborate more efficiently:** Cut configuration time and share workspaces easily. Integrate with the tools you already use.

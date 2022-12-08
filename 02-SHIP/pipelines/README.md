@@ -14,7 +14,7 @@ For more information, please see the [official product documentation](https://do
 ## Introduction to OpenShift Pipelines
 Red Hat OpenShift Pipelines is a cloud-native, continuous integration and continuous delivery (CI/CD) solution based on Kubernetes resources. It uses Tekton building blocks to automate deployments across multiple platforms by abstracting away the underlying implementation details. Tekton introduces a number of standard custom resource definitions (CRDs) for defining CI/CD pipelines that are portable across Kubernetes distributions.
 
-![OpenShift Pipelines](../graphics/pipelines-00.png)
+![OpenShift Pipelines](../../graphics/pipelines-00.png)
 
 **Key features:**
 - Red Hat OpenShift Pipelines is a serverless CI/CD system that runs pipelines with all the required dependencies in isolated containers.
@@ -28,7 +28,7 @@ Red Hat OpenShift Pipelines is a cloud-native, continuous integration and contin
 ## OpenShift Pipeline Concepts
 Let's take a detailed view of the various pipeline concepts.
 
-![OpenShift Pipelines](../graphics/pipelines-02.png)
+![OpenShift Pipelines](../../graphics/pipelines-02.png)
 
 #### Concepts that define the pipeline
 
@@ -48,7 +48,7 @@ Since it’s supported by an Operator, OpenShift Pipelines is very easy to insta
   **Note:** If you dont have an OpenShift cluster available, you can use [OpenShift Developer Sandbox](https://developers.redhat.com/developer-sandbox).
   The sandbox is perfect for immediate access into OpenShift. With the sandbox, you'll get free access to a shared OpenShift and Kubernetes cluster.
 
-![OpenShift Pipelines](../graphics/pipelines-01.png)
+![OpenShift Pipelines](../../graphics/pipelines-01.png)
 
   **Note:** If you dont want to use OpenShift Console GUI for installing Pipelines Operator, you can use [github.com/redhat-cop/gitops-catalog](https://github.com/redhat-cop/gitops-catalog).
 ```shell

@@ -17,7 +17,7 @@ A build in OpenShift Container Platform is the process of transforming input par
 ### Source-to-image (S2I) build
 The source-to-image strategy creates a new container image based on application source code or application binaries. Red Hat OpenShift clones the application source code, or copies the application binaries into a compatible builder image, and assembles a new container image that is ready for deployment on the platform.
 
-![OpenShift Builds](../graphics/builds-00.png)
+![OpenShift Builds](../../graphics/builds-00.png)
 
 ---
 
