@@ -18,11 +18,11 @@ It abstracts non-functional application components and groups them in a centrali
 By applying Microservice architectures, the work of one large enterprise application is divided into multiple smaller modular services. These new so-called microservices can make our application more resilient and easier to scale. 
 However, as an application built on a microservice architecture grows in size and complexity, it becomes difficult to understand and manage.
 
-![OpenShift Service Mesh](../graphics/service-mesh-02.png)
+![OpenShift Service Mesh](../../graphics/service-mesh-02.png)
 
 Service Mesh can address those architecture problems by intercepting traffic between services and can modify, redirect, or create new requests to other services.
 
-![OpenShift Service Mesh](../graphics/service-mesh-01.png)
+![OpenShift Service Mesh](../../graphics/service-mesh-01.png)
 
 OpenShift Service Mesh, based on the open-source project [Istio](https://istio.io/), provides an easy way to create a network of deployed services that provides discovery, load balancing, service-to-service authentication, failure recovery, metrics, and monitoring.
 
@@ -44,7 +44,7 @@ Red Hat is committed to open source and has built OpenShift Service Mesh around 
 Further, Red Hat created project [Kiali](https://kiali.io/) for observing, managing and troubleshooting Istio service meshes.
 Most other offerings have proprietary management dashboards, while Kiali has become the standard open-source dashboard for Istio.
 
-![OpenShift Service Mesh](../graphics/service-mesh-03.png)
+![OpenShift Service Mesh](../../graphics/service-mesh-03.png)
 
 OpenShift Service Mesh incorporates and extends several open-source projects and orchestrates them to provide an improved developer experience:
 - **Istio** is the core implementation of the service mesh architecture for the Kubernetes platform. Istio creates a control plane that centralizes service mesh capabilities and a data plane that creates the structure of the mesh.
@@ -100,11 +100,11 @@ subscription.operators.coreos.com/kiali-ossm created
 
 Wait for ES, Jaeger and Kiali operators to become ready. 
 
-![OpenShift Service Mesh](../graphics/service-mesh-07.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-07.jpeg)
 
 ### Install Service Mesh operator
 
-![OpenShift Service Mesh](../graphics/service-mesh-06.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-06.jpeg)
 
 - #### [Install OpenShift ServiceMesh Operator](https://github.com/redhat-cop/gitops-catalog/tree/main/openshift-servicemesh/operator)
 
@@ -402,7 +402,7 @@ Open Kiali in your browser
 ```shell
 open -a "Google Chrome" $KIALI_URL
 ```
-![OpenShift Service Mesh](../graphics/service-mesh-08.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-08.jpeg)
 
 - Kiali - Service Graph
 
@@ -512,12 +512,12 @@ You should see OpenShift Login screen.
 Enter the username and password as below and click Log In. 
 If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
 
-![OpenShift Service Mesh](../graphics/service-mesh-09.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-09.jpeg)
 
 - Istio Mesh Metrics
 Select Dashboard Icon > Manage > Istio > Istio Mesh Dashboard to see Istio mesh metrics
 
-![OpenShift Service Mesh](../graphics/service-mesh-10.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-10.jpeg)
 
 The Grafana Dashboard for Istio consists of three main sections:
 
@@ -635,12 +635,12 @@ EOF
 Let’s find out if the fault injection works correctly via accessing the CoolStore Inventory page once again. 
 You will see that the Status of CoolStore Inventory continues to change between DEAD and OK.
 
-![OpenShift Service Mesh](../graphics/service-mesh-11.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-11.jpeg)
 
 Back on the Kiali Graph page and you will see red traffic from istio-ingressgateway as well as around 50% of requests are displayed as 5xx on the right side, HTTP Traffic. 
 It may not be exactly 50% since some traffic is coming from the catalog and ingress gateway at the same time, but it will approach 50% over time.
 
-![OpenShift Service Mesh](../graphics/service-mesh-12.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-12.jpeg)
 
 Let’s now add a 5 second delay for the inventory service.
 
@@ -679,7 +679,7 @@ Go to the Kiali Graph you opened earlier and you will see that the green traffic
 
 Click on the "edge" (the line between istio-ingressgateway and inventory) and then scroll to the bottom of the right-side graph showing the HTTP Request Response Time. Hover over the black average data point to confirm that the average response time is about 5000ms (5 seconds) as expected
 
-![OpenShift Service Mesh](../graphics/service-mesh-13.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-13.jpeg)
 
 Before we will move to the next step, clean up the fault injection and set the default virtual service once again using these commands in a Terminal:
 
@@ -752,7 +752,7 @@ siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
 ```
 This will run for 1 minute, and you’ll likely encounter errors like [error] Failed to make an SSL connection: 5 which indicates that the circuit breaker is tripping and stopping the flood of requests from going to the service.
 
-![OpenShift Service Mesh](../graphics/service-mesh-13.jpeg)
+![OpenShift Service Mesh](../../graphics/service-mesh-13.jpeg)
 
 
 
