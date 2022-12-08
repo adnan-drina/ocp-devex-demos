@@ -255,6 +255,7 @@ When it’s done, verify that the inventory-database is running with 2 container
 oc get pods -n catalog --field-selector status.phase=Running &&\
 oc get pods -n inventory --field-selector status.phase=Running
 ```
+The output should be similar to this:
 ```shell
 NAME                         READY   STATUS    RESTARTS   AGE
 catalog-database-2-qglw8     2/2     Running   0          89s
@@ -263,17 +264,99 @@ NAME                         READY   STATUS    RESTARTS   AGE
 inventory-2-pqc2s            2/2     Running   0          38s
 inventory-database-2-pmnnp   2/2     Running   0          90s
 ```
+Now, all our pods are running 2 out of 2 container.
+In one container is our service and in the other is the istio-proxy running.
 
 - #### Expose a service
 
-Next, let’s create an ingress gateway to allow ingress traffic to the mesh.
-And a virtual service to send incoming traffic to our app catalog service. 
+Next, let’s create an ingress gateway to allow ingress traffic to the mesh:
+
 ```shell
-oc create -f ./demo/catalog/rules/catalog-default.yaml -n catalog
+oc create -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: coolstore-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - $GATEWAY_URL
+EOF
 ```
+The output should be similar to this:
 ```shell
-gateway.networking.istio.io/catalog-gateway created
+gateway.networking.istio.io/coolstore-gateway created
+```
+
+And let's create a virtual service to send incoming traffic to our app catalog service:
+```yaml
+oc create -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: catalog-default
+  namespace: catalog
+spec:
+  hosts:
+    - $GATEWAY_URL
+  gateways:
+    - istio-system/coolstore-gateway
+  http:
+    - match:
+        - uri:
+            exact: /services/products
+        - uri:
+            exact: /services/product
+        - uri:
+            exact: /
+      route:
+        - destination:
+            host: catalog-springboot
+            port:
+              number: 8080
+EOF
+```
+The output should be similar to this:
+```shell
 virtualservice.networking.istio.io/catalog-default created
+```
+
+And a virtual service for our inventory service
+```yaml
+oc create -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-default
+  namespace: inventory
+spec:
+  hosts:
+    - inventory.inventory.svc.cluster.local
+  gateways:
+    - istio-system/coolstore-gateway
+  http:
+    - match:
+        - uri:
+            exact: /services/inventory
+        - uri:
+            exact: /
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+EOF
+```
+The output should be similar to this:
+```shell
+virtualservice.networking.istio.io/inventory-default created
 ```
 
 - #### Let's test it!
@@ -297,14 +380,10 @@ The expected result is 200.
 
 Now let's keep those requests coming
 ```shell
-for i in {1..1000} ; do curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY_URL ; sleep 2 ; done
-
-#or like this
-while true; \
-do curl -o /dev/null -s ${GATEWAY_URL}; \
-sleep 2; done
+for i in {1..1000} ; do curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY_URL/services/products ; sleep 2 ; done
 ```
-This command will endlessly access the application and report the HTTP status result in a separate terminal window. The script should return an endless 200.
+This command will endlessly access the application and report the HTTP status result in a separate terminal window. 
+The script should return an endless 200.
 
 With this application load running, metrics will become much more interesting in the next few steps.
 
@@ -368,12 +447,14 @@ open -a "Google Chrome" $JAEGER_URL
 ```
 
 #### Querying Metrics with Prometheus
-Prometheus will periodically scrape applications to retrieve their metrics (by default on the /metrics endpoint of the application). The Prometheus add-on for Istio is a Prometheus server that comes pre-configured to scrape Istio Mixer endpoints to collect its exposed metrics. It provides a mechanism for persistent storage and querying of those metrics.
+Prometheus will periodically scrape applications to retrieve their metrics (by default on the /metrics endpoint of the application).
+The Prometheus add-on for Istio is a Prometheus server that comes pre-configured to scrape Istio Mixer endpoints to collect its exposed metrics.
+It provides a mechanism for persistent storage and querying of those metrics.
 
 Open the Prometheus console and click on Log in with OpenShift.
-You should see OpenShift Login screen. 
-Enter the username and password as below and click Log In. 
-If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
+You should see the OpenShift Login screen.
+Enter the username and password as below and click Log In.
+If you have requested permission to authorise Prometheus access, click on Allow selected permissions.
 
 ```shell
 PROMETHEUS_URL="https://$(oc get route prometheus -o jsonpath="{.spec.host}" -n istio-system)"
@@ -427,7 +508,9 @@ Open Grafana in your browser
 ```shell
 open -a "Google Chrome" $GRAFANA_URL
 ```
-You should see OpenShift Login screen. Enter the username and password as below and click Log In. If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
+You should see OpenShift Login screen. 
+Enter the username and password as below and click Log In. 
+If you have Requested permissions to authorize access Prometheus, click on Allow selected permissions.
 
 ![OpenShift Service Mesh](../graphics/service-mesh-09.jpeg)
 
@@ -455,9 +538,10 @@ For more on how to create, configure, and edit dashboards, please see the [Grafa
 Here, we will learn the advanced use cases of service mesh. 
 Our demo will showcase features such as:
 - [Fault Injection](#fault-injection)
-- Traffic Shifting
 - [Circuit Breaking](#Enable Circuit Breaker)
-- Rate Limiting
+
+[//]: # (- Rate Limiting)
+[//]: # (- Traffic Shifting)
 
 These features are important for any distributed applications built on top of Kubernetes/Openshift.
 
@@ -497,6 +581,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-default
+  namespace: inventory
 spec:
   hosts:
   - "${GATEWAY_URL}"

@@ -4,9 +4,9 @@ metadata:
   name: inventory-default
 spec:
   hosts:
-    - "*"
+    - inventory.inventory.svc.cluster.local
   gateways:
-    - catalog/catalog-gateway
+    - istio-system/coolstore-gateway
   http:
     - match:
         - uri:
