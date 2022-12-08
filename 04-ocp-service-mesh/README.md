@@ -1,5 +1,5 @@
 # 5-minute demo: OpenShift Service Mesh
-For more information, please see the [official product documentation](https://docs.openshift.com/container-platform/4.6/service_mesh/v2x/ossm-about.html).
+For more information, please see the [official product documentation](https://docs.openshift.com/container-platform/4.11/service_mesh/v2x/ossm-about.html).
 
 ## Table of Contents
 - **[Introduction to OpenShift Service Mesh](#introduction-to-openshift-service-mesh)**<br>
@@ -13,30 +13,36 @@ For more information, please see the [official product documentation](https://do
 
 ## Introduction to OpenShift Service Mesh
 Service mesh is a technology designed to help developers address microservice architecture problems in a unified and centralized way.
-It abstracts non-functional application components from developers and groups them in a centralized point of control so they can be reused by many or all microservices in an application.
+It abstracts non-functional application components and groups them in a centralized point of control so they can be reused by many or all microservices in an application.
 
-Microservice architectures split the work of enterprise applications into modular services, which can make scaling and maintenance easier. However, as an enterprise application built on a microservice architecture grows in size and complexity, it becomes difficult to understand and manage.
+By applying Microservice architectures, the work of one large enterprise application is divided into multiple smaller modular services. These new so-called microservices can make our application more resilient and easier to scale. 
+However, as an application built on a microservice architecture grows in size and complexity, it becomes difficult to understand and manage.
 
 ![OpenShift Service Mesh](../graphics/service-mesh-02.png)
 
-Service Mesh can address those architecture problems by capturing or intercepting traffic between services and can modify, redirect, or create new requests to other services.
+Service Mesh can address those architecture problems by intercepting traffic between services and can modify, redirect, or create new requests to other services.
 
 ![OpenShift Service Mesh](../graphics/service-mesh-01.png)
 
-Service Mesh, which is based on the open-source [Istio project](https://istio.io/), provides an easy way to create a network of deployed services that provides discovery, load balancing, service-to-service authentication, failure recovery, metrics, and monitoring.
+OpenShift Service Mesh, based on the open-source project [Istio](https://istio.io/), provides an easy way to create a network of deployed services that provides discovery, load balancing, service-to-service authentication, failure recovery, metrics, and monitoring.
 
-A service mesh also provides more complex operational functionality, including A/B testing, canary releases, access control, and end-to-end authentication.
+A service mesh provides even more complex operational functionality, including A/B testing, canary releases, access control, and end-to-end authentication.
 
 ### Core features
 
 - **Traffic Management** - Control the flow of traffic and API calls between services, make calls more reliable, and make the network more robust in the face of adverse conditions.
 - **Service Identity and Security** - Provide services in the mesh with a verifiable identity and provide the ability to protect service traffic as it flows over networks of varying degrees of trustworthiness.
-- **Policy Enforcement** - Apply organizational policy to the interaction between services, ensure access policies are enforced and resources are fairly distributed among consumers. Policy changes are made by configuring the mesh, not by changing application code.
-- **Telemetry** - Gain understanding of the dependencies between services and the nature and flow of traffic between them, providing the ability to quickly identify issues.
+- **Policy Enforcement** - Apply an organizational policy to the interaction between services, ensure access policies are enforced, and resources are fairly distributed among consumers. Policy changes are made by configuring the mesh, not by changing the application code.
+- **Telemetry** - Gain an understanding of the dependencies between services and the nature and flow of traffic between them, providing the ability to identify issues quickly.
 
 ---
 
 ## Service Mesh Ecosystem
+
+Red Hat is committed to open source and has built OpenShift Service Mesh around Istio - the most comprehensive open source service mesh, which is part of the CNCF with support from ourselves, Google, IBM and others.
+
+Further, Red Hat created project [Kiali](https://kiali.io/) for observing, managing and troubleshooting Istio service meshes.
+Most other offerings have proprietary management dashboards, while Kiali has become the standard open-source dashboard for Istio.
 
 ![OpenShift Service Mesh](../graphics/service-mesh-03.png)
 
@@ -83,6 +89,7 @@ oc apply -k https://github.com/redhat-cop/gitops-catalog/elasticsearch-operator/
 oc apply -k https://github.com/redhat-cop/gitops-catalog/jaeger-operator/overlays/stable &&\
 oc apply -k https://github.com/redhat-cop/gitops-catalog/kiali-operator/overlays/stable
 ```
+The result should be similar to this:
 ```shell
 namespace/openshift-operators-redhat created
 operatorgroup.operators.coreos.com/openshift-operators-redhat created
@@ -99,11 +106,12 @@ Wait for ES, Jaeger and Kiali operators to become ready.
 
 ![OpenShift Service Mesh](../graphics/service-mesh-06.jpeg)
 
-- [OpenShift ServiceMesh Operator](https://github.com/redhat-cop/gitops-catalog/tree/main/openshift-servicemesh/operator)
+- #### [Install OpenShift ServiceMesh Operator](https://github.com/redhat-cop/gitops-catalog/tree/main/openshift-servicemesh/operator)
 
 ```shell
 oc apply -k https://github.com/redhat-cop/gitops-catalog/openshift-servicemesh/operator/overlays/stable
 ```
+The result should be similar to this:
 ```shell
 subscription.operators.coreos.com/servicemeshoperator created
 ```
@@ -114,19 +122,20 @@ The Red Hat OpenShift Service Mesh Operator does not create the various Service 
 
 The Control Plane instance will be used to install and configure all necessary Service Mesh components. 
 
-- Installs the Control Plane component of OpenShift ServiceMesh.
+- #### Installs the Control Plane component of OpenShift ServiceMesh.
 
 ```shell
 oc apply -k https://github.com/redhat-cop/gitops-catalog/openshift-servicemesh/instance/overlays/default
 ```
+The result should be similar to this:
 ```shell
 namespace/istio-system created
 servicemeshcontrolplane.maistra.io/istio-system created
 ```
 
 This will create a new project named istio-system and will deploy a service mesh control plain.
-We can watch creation of pods with following command:
 
+We can watch creation of pods with following command:
 ```shell
 oc get pods -n istio-system -w
 ```
@@ -141,13 +150,12 @@ jaeger-7c47c46658-f6rwj                     2/2     Running   0          3m29s
 kiali-85c5b45d8f-94hv8                      1/1     Running   0          95s
 prometheus-7b64fbf758-snfq8                 2/2     Running   0          4m37s
 wasm-cacher-istio-system-555fd6f7df-6qrnm   1/1     Running   0          2m1s
-
 ```
 
 ---
 
 ## Getting Started with Service Mesh
-In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Grafana, and we'll see how to configure basic Istio functionalities such as VirtualService and A/B Testing.
+In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Grafana, and we'll see how to configure basic Istio functionalities such as Gateway and VirtualService.
 
 - [Install demo application and add it to the mesh](#install-demo-application-and-add-it-to-the-mesh)
   - [Create application namespaces](#create-application-namespaces)
@@ -164,29 +172,31 @@ In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Graf
 We'll install a sample demo application into the system.
 It's a typical microservice application that could be installed on any Kubernetes instance with or without Service Mesh.
 
-**Catalog** - Spring Boot project
-
-**Inventory** - Quarkus project
-
+Our demo application consists of two microservices:
+1. **Catalog** - Spring Boot project
+2. **Inventory** - Quarkus project
 
 - #### Create application namespaces
 ```shell
 oc create -f ./demo/demo-namespaces.yaml
 ```
+The output should be similar to this:
 ```shell
 namespace/catalog created
 namespace/inventory created
 ```
 
-Before we start deploying our application we need to make sure we have the right access to our different application namespaces. 
-The ServiceMeshControlPlane that includes Elasticsearch, Jaeger, Kiali and Service Mesh Operators, have all been installed at the cluster provisioning time. 
-However for applications to communicate to each other accross different namespaces, we need to ensure that the ServiceMeshMemberRoll is also created.
+Before we deploy our application, we need to ensure we have the right access to our different application namespaces.
+For applications to communicate with each other across different namespaces, we need to ensure that the ServiceMeshMemberRoll is created.
+
+ServiceMeshMemberRoll will integrate out application namespaces with service mesh namespaces allowing service communication across the mesh.
 
 - #### Create ServiceMeshMemberRoll
 
 ```shell
 oc create -f ./demo/service-mesh-member-roll.yaml
 ```
+The output should be similar to this:
 ```shell
 servicemeshmemberroll.maistra.io/default created
 ```
@@ -206,6 +216,7 @@ Let's check if our application is running:
 oc get pods -n catalog --field-selector status.phase=Running &&\
 oc get pods -n inventory --field-selector status.phase=Running
 ```
+The output should be similar to this:
 ```shell
 NAME                         READY   STATUS    RESTARTS   AGE
 catalog-database-1-fbnws     1/1     Running   0          3m53s
@@ -214,13 +225,13 @@ NAME                         READY   STATUS    RESTARTS   AGE
 inventory-1-qmvsc            1/1     Running   0          4m33s
 inventory-database-1-z96f5   1/1     Running   0          5m35s
 ```
+All seems good. All our pods are running 1 out of 1 container.
 
 - #### Enabling automatic sidecar injection
 
-Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application’s pod to provide Service Mesh capabilities to the application. 
-We'll enable automatic sidecar injection using the annotation. 
-This ensures that your application contains the appropriate configuration for the Service Mesh upon deployment. 
-This method requires fewer privileges and does not conflict with other OpenShift capabilities such as builder pods.
+Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application's pod to provide Service Mesh capabilities to the application. We'll enable automatic sidecar injection using the annotation.
+This annotation ensures that your application contains the appropriate configuration for the Service Mesh upon deployment. 
+In addition, this method requires fewer privileges and does not conflict with other OpenShift capabilities, such as builder pods.
 
 First, we'll annotate our database deployments and wait for them to roll out new pods:
 ```shell
@@ -629,6 +640,11 @@ spec:
       http:
         http1MaxPendingRequests: 1
         maxRequestsPerConnection: 1
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 1s
+      baseEjectionTime: 3m
+      maxEjectionPercent: 100
 EOF
 ```
 
@@ -637,6 +653,49 @@ Thus, if we send more than 2 requests within a short period of time to the inven
 Furthermore, it will detect any hosts that return a server error (HTTP 5xx) and eject the pod out of the load balancing pool for 15 minutes. 
 You can visit here to check the [Istio spec](https://istio.io/docs/tasks/traffic-management/circuit-breaking) for more details on what each configuration parameter does.
 
+We’ll use a utility called siege to send multiple concurrent requests to our application, and witness the circuit breaker kicking in and opening the circuit.
 
+Execute this to simulate a number of users attempting to access the gateway URL simultaneously
 
+```shell
+export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}') && \
 siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
+```
+
+```shell
+siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
+```
+This will run for 1 minute, and you’ll likely encounter errors like [error] Failed to make an SSL connection: 5 which indicates that the circuit breaker is tripping and stopping the flood of requests from going to the service.
+
+![OpenShift Service Mesh](../graphics/service-mesh-13.jpeg)
+
+
+
+oc delete virtualservice inventory-default
+
+```yaml
+oc apply -f - << EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: inventory-default
+spec:
+  hosts:
+  - "${GATEWAY_URL}"
+  gateways:
+  - catalog/catalog-gateway
+  http:
+    - match:
+        - uri:
+            exact: /services/inventory
+        - uri:
+            exact: /
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+EOF
+```
+
+

@@ -1,0 +1,26 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: calalog-req-auth
+  namespace: catalog
+spec:
+  selector:
+    matchLabels:
+      deploymentconfig: catalog-springboot
+  jwtRules:
+    - issuer: http://REPLACEURL/auth/realms/istio
+      jwksUri: http://REPLACEURL/auth/realms/istio/protocol/openid-connect/certs
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: catalog-auth-policy
+  namespace: catalog
+spec:
+  selector:
+    matchLabels:
+      deploymentconfig: catalog-springboot
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]

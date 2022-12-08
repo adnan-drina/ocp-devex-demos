@@ -8,8 +8,13 @@ spec:
   gateways:
     - catalog/catalog-gateway
   http:
-    - route:
-      - destination:
-          host: inventory
-          port:
-            number: 80
+    - match:
+        - uri:
+            exact: /services/inventory
+        - uri:
+            exact: /
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
