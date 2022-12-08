@@ -296,7 +296,7 @@ gateway.networking.istio.io/coolstore-gateway created
 ```
 
 And let's create a virtual service to send incoming traffic to our app catalog service:
-```yaml
+```shell
 oc create -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -329,7 +329,7 @@ virtualservice.networking.istio.io/catalog-default created
 ```
 
 And a virtual service for our inventory service
-```yaml
+```shell
 oc create -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -758,7 +758,7 @@ This will run for 1 minute, and you’ll likely encounter errors like [error] Fa
 
 oc delete virtualservice inventory-default
 
-```yaml
+```shell
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
