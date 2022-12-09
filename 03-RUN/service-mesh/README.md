@@ -535,7 +535,7 @@ For more on how to create, configure, and edit dashboards, please see the [Grafa
 ---
 ## Advanced Service Mesh Development
 
-Here, we will learn the advanced use cases of service mesh. 
+Here, we'll learn some advanced use cases of service mesh. 
 Our demo will showcase features such as:
 - [Fault Injection](#fault-injection)
 - [Circuit Breaking](#Enable Circuit Breaker)
@@ -574,33 +574,6 @@ Note: Make sure our GATEWAY_URL is available
 export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')
 ```
 
-Create the new VirtualService to direct traffic to the inventory service by running the following command
-```shell
-oc apply -f - << EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: inventory-default
-  namespace: inventory
-spec:
-  hosts:
-  - "${GATEWAY_URL}"
-  gateways:
-  - catalog/catalog-gateway
-  http:
-    - match:
-      - uri:
-          exact: /services/inventory
-      - uri:
-          exact: /
-      route:
-      - destination:
-          host: inventory
-          port:
-            number: 80
-EOF
-```
-
 Let’s inject a failure (500 status) in 50% of requests to inventory microservices.
 Before creating a new inventory-fault VirtualService, we need to delete the existing inventory-default virtualService.
 ```shell
@@ -613,22 +586,25 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-fault
+  namespace: inventory
 spec:
   hosts:
-  - "${GATEWAY_URL}"
-  gateways:
-  - catalog/catalog-gateway
+#  - catalog-springboot.catalog.svc.cluster.local
+  - catalog-default
+#  - inventory.inventory.svc.cluster.local
+#  gateways:
+#  - istio-system/coolstore-gateway
   http:
-    - fault:
-         abort:
-           httpStatus: 500
-           percentage:
-             value: 50
-      route:
-        - destination:
-            host: inventory
-            port:
-              number: 80
+  - fault:
+      abort:
+        httpStatus: 500
+        percentage:
+          value: 50
+    route:
+    - destination:
+        host: inventory
+        port:
+          number: 80
 EOF
 ```
 
