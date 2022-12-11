@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: catalog-service
+spec:
+  hosts:
+    - catalog-springboot
+  http:
+    - route:
+        - destination:
+            host: catalog-springboot
+            port: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: catalog-database
+spec:
+  hosts:
+    - catalog-database
+  http:
+    - route:
+        - destination:
+            host: catalog-database
+            port: 5432

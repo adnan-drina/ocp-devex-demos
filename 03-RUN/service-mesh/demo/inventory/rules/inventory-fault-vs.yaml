@@ -5,7 +5,7 @@ metadata:
   namespace: inventory
 spec:
   hosts:
-    - inventory.inventory.svc.cluster.local
+    - inventory
   gateways:
     - istio-system/coolstore-gateway
   http:
