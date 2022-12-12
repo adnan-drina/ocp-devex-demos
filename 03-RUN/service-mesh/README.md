@@ -432,17 +432,15 @@ The output should be similar to this:
 virtualservice.networking.istio.io/inventory-default created
 ```
 
-- #### Let's test it!
+### Let's test that the Gateway and VirtualService have been set correctly.
 
-Test that the gateway and VirtualService have been set correctly.
-
-Test a page that has been explicitly exposed.
+- Test a page that has been explicitly exposed.
 ```shell
 curl -s -I "$GATEWAY_URL/services/products"
 ```
 The expected result is 200.
 
-Now let's keep those requests coming
+- Now let's keep those requests coming
 ```shell
 for i in {1..1000} ; do curl -o /dev/null -s -w "%{http_code}\n" $GATEWAY_URL/services/products ; sleep 2 ; done
 ```
@@ -602,7 +600,7 @@ For more on how to create, configure, and edit dashboards, please see the [Grafa
 Here, we'll learn some advanced use cases of service mesh. 
 Our demo will showcase features such as:
 - [Fault Injection](#fault-injection)
-- [Circuit Breaking](#Enable Circuit Breaker)
+- [Circuit Breaking](#enable-circuit-breaker)
 
 [//]: # (- Rate Limiting)
 [//]: # (- Traffic Shifting)
@@ -731,6 +729,7 @@ This allows different components of the distributed system to be tuned independe
 See Envoy's circuit breaker documentation for more details.
 
 Let's add a circuit breaker to the calls to the Inventory service.
+
 Instead of using a VirtualService object, circuit breakers in Istio are defined as DestinationRule objects.
 DestinationRule defines policies that apply to traffic intended for a service after routing has occurred.
 These rules specify configuration for load balancing, connection pool size from the sidecar, and outlier detection settings to detect and evict unhealthy hosts from the load balancing pool.
@@ -790,15 +789,15 @@ This will run for 1 minute, and you’ll likely encounter errors like [error] Fa
 So, what are the major benefits of using Service Mesh?:
 
 - From **business perspective** it's quicker time to market
-Less time is wasted on writing non-functional code that doesn't add business value.
-So, we are able to release our code much quicker!
+  Less time is wasted on writing non-functional code that doesn't add business value.
+  So we can release our applications much quicker!
 
 - From **development perspective** it’s simplified development.
-Developers are spending less time on plumbing their services.
-This means less code to write and more time to focus on the real use case.
+  Developers are spending less time on plumbing their services.
+  This means less code to write and more time to focus on the actual use case.
 
-- From **operations perspective** it’s a more reliable and uniform system.
-Less room for human error, more insight in what is happening “under the hood” and more confidence that a system runs in a security maner.
+- From **operations perspective** it's a more reliable and uniform system.
+  Less room for human error, more insight into what is happening "under the hood", and more confidence that a system runs securely.
 
 What Red Hat OpenShift Service Mesh provides
 
