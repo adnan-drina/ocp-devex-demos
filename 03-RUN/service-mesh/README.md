@@ -789,17 +789,19 @@ This will run for 1 minute, and you’ll likely encounter errors like [error] Fa
 So, what are the major benefits of using Service Mesh?:
 
 - From **business perspective** it's quicker time to market.<br/>
-  Less time is wasted on writing non-functional code that doesn't add business value.
+  Less time is wasted on writing non-functional code that doesn't add business value.<br/>
   So we can release our applications much quicker!
 
-- From **development perspective** it’s simplified development.
-  Developers are spending less time on plumbing their services.
+- From **development perspective** it’s simplified development.<br/>
+  Developers are spending less time on plumbing their services.<br/>
   This means less code to write and more time to focus on the actual use case.
 
-- From **operations perspective** it's a more reliable and uniform system.
-  Less room for human error, more insight into what is happening "under the hood", and more confidence that a system runs securely.
+- From **operations perspective** it's a more reliable and uniform system.<br/>
+  Less room for human error, <br/>
+  more insight into what is happening "under the hood", <br/>
+  and more confidence that a system runs securely.
 
-What Red Hat OpenShift Service Mesh provides
+### Let's recapture what Red Hat OpenShift Service Mesh provides
 
 #### Support for your security needs:
 
