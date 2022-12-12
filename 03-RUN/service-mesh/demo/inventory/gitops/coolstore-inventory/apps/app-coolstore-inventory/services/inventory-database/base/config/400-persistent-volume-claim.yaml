@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: inventory-database-pvc
+  labels:
+    app.kubernetes.io/component: postgres
+    app.kubernetes.io/name: inventory-database
+    app.kubernetes.io/part-of: coolstore-inventory
+    app.openshift.io/runtime: postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -1,0 +1,5 @@
+bases:
+- ../services/coolstore-catalog
+- ../services/catalog-database
+
+namespace: coolstore-catalog

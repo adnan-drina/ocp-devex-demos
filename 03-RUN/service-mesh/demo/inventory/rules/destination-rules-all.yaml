@@ -1,0 +1,30 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: inventory-service-dr
+  namespace: coolstore-inventory
+spec:
+  host: inventory
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+##  Circuit Breaker config
+#    connectionPool:
+#      tcp:
+#        maxConnections: 1
+#      http:
+#        http1MaxPendingRequests: 1
+#        maxRequestsPerConnection: 1
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: inventory-database-dr
+  namespace: coolstore-inventory
+spec:
+  host: inventory-database
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN

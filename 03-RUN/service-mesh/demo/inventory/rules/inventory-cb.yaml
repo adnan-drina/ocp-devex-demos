@@ -2,6 +2,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: inventory-cb
+  namespace: coolstore-inventory
 spec:
   host: inventory
   trafficPolicy:

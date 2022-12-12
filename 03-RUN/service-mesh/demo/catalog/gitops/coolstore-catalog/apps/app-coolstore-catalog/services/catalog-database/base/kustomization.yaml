@@ -1,0 +1,9 @@
+bases:
+- ./config
+
+commonLabels:
+  app: catalog-database
+  app.kubernetes.io/version: "v1"
+  app.kubernetes.io/name: catalog-database
+  app.kubernetes.io/part-of: coolstore-catalog
+  app.kubernetes.io/component: postgresql

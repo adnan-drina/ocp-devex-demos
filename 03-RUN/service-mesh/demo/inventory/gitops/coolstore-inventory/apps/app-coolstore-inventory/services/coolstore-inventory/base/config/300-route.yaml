@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: inventory
+spec:
+  port:
+    targetPort: web
+  to:
+    kind: Service
+    name: inventory
+    weight: 100
+  wildcardPolicy: None

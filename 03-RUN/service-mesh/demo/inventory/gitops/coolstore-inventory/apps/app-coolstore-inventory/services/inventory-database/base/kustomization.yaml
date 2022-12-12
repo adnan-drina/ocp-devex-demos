@@ -1,0 +1,10 @@
+bases:
+- ./config
+
+commonLabels:
+  app: inventory-database
+  component: postgresql
+  app.kubernetes.io/version: "v1"
+  app.kubernetes.io/component: postgresql
+  app.kubernetes.io/name: inventory-database
+  app.kubernetes.io/part-of: coolstore-inventory

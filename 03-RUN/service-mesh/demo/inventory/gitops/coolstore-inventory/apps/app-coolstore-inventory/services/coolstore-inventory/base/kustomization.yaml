@@ -1,0 +1,9 @@
+bases:
+- ./config
+
+commonLabels:
+  app: inventory
+  app.kubernetes.io/version: "v1"
+  app.kubernetes.io/component: quarkus-service
+  app.kubernetes.io/name: inventory
+  app.kubernetes.io/part-of: coolstore-inventory

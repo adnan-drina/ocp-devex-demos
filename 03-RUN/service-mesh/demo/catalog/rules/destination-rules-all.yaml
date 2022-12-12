@@ -2,9 +2,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: inventory-service-dr
+  name: catalog-service-dr
+  namespace: catalog
 spec:
-  host: inventory
+  host: catalog-springboot
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN
@@ -12,9 +13,10 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: inventory-database-dr
+  name: catalog-database-dr
+  namespace: catalog
 spec:
-  host: inventory-database
+  host: catalog-database
   trafficPolicy:
     loadBalancer:
       simple: ROUND_ROBIN

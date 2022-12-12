@@ -82,3 +82,6 @@ git remote set-url origin git@github.com:adnan-drina/eShopOnContainers.git
 git push origin feature/openshift-aro
 
 oc new-project development
+
+
+

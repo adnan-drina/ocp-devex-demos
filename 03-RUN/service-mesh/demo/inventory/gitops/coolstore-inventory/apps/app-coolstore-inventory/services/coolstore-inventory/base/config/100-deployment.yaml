@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+  labels:
+    app.openshift.io/runtime: quarkus
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"inventory-database"}]'
+    app.openshift.io/vcs-ref: main
+    app.openshift.io/vcs-uri: https://github.com/adnan-drina/coolstore-inventory.git
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: inventory
+      namespace: coolstore-inventory
+    spec:
+      containers:
+        - name: inventory
+          resources: {}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/live
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          env:
+            - name: JAVA_OPTS_APPEND
+              value: '-Dquarkus.profile=openshift'
+            - name: DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: coolstore-inventory-config
+                  key: DATASOURCE_URL
+            - name: DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: coolstore-inventory-config
+                  key: DATASOURCE_USERNAME
+            - name: DATASOURCE_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: coolstore-inventory-config
+                  key: DATASOURCE_PASSWORD
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          image: quay.io/adrina/coolstore-inventory:main-97c1b3cff4770dffb815e8863bbda9ce16d07f9a
+          imagePullPolicy: Always
+      serviceAccountName: default
+status: {}

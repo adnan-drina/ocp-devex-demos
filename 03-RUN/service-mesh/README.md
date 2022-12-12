@@ -176,25 +176,65 @@ Our demo application consists of two microservices:
 1. **Catalog** - Spring Boot project
 2. **Inventory** - Quarkus project
 
-- #### Create application namespaces
+- #### Create Coolstore Catalog service
 ```shell
-oc create -f ./demo/demo-namespaces.yaml
+oc apply -k ./demo/catalog/gitops/coolstore-catalog/env/overlays && \
+oc apply -k ./demo/catalog/gitops/coolstore-catalog/apps/app-coolstore-catalog/overlays
 ```
 The output should be similar to this:
 ```shell
-namespace/catalog created
-namespace/inventory created
+namespace/coolstore-catalog created
+configmap/coolstore-catalog-config created
+secret/catalog-database created
+service/catalog-database created
+service/catalog created
+deployment.apps/catalog-database created
+deployment.apps/catalog created
+route.route.openshift.io/catalog created
+persistentvolumeclaim/catalog-database-pvc created
 ```
 
-Before we deploy our application, we need to ensure we have the right access to our different application namespaces.
+- #### Create Coolstore Inventory service
+```shell
+oc apply -k ./demo/inventory/gitops/coolstore-inventory/env/overlays && \
+oc apply -k ./demo/inventory/gitops/coolstore-inventory/apps/app-coolstore-inventory/overlays
+```
+The output should be similar to this:
+```shell
+namespace/coolstore-inventory created
+configmap/coolstore-inventory-config created
+secret/inventory-database created
+service/inventory-database created
+service/inventory created
+deployment.apps/inventory-database created
+deployment.apps/inventory created
+route.route.openshift.io/inventory created
+persistentvolumeclaim/inventory-database-pvc created
+```
+
+Let's check if our application is running:
+```shell
+oc get pods -n coolstore-catalog --field-selector status.phase=Running &&\
+oc get pods -n coolstore-inventory --field-selector status.phase=Running
+```
+The output should be similar to this:
+```shell
+NAME                         READY   STATUS    RESTARTS   AGE
+catalog-1-c57cw              1/1     Running   0          3m8s
+catalog-database-1-fbnws     1/1     Running   0          3m53s
+NAME                         READY   STATUS    RESTARTS   AGE
+inventory-1-qmvsc            1/1     Running   0          4m33s
+inventory-database-1-z96f5   1/1     Running   0          5m35s
+```
+All seems good. All our pods are running 1 out of 1 container.
+
+- #### Create ServiceMeshMemberRoll
 For applications to communicate with each other across different namespaces, we need to ensure that the ServiceMeshMemberRoll is created.
 
 ServiceMeshMemberRoll will integrate out application namespaces with service mesh namespaces allowing service communication across the mesh.
 
-- #### Create ServiceMeshMemberRoll
-
 ```shell
-oc create -f ./demo/service-mesh-member-roll.yaml
+oc create -f ./demo/istio/service-mesh-member-roll.yaml
 ```
 The output should be similar to this:
 ```shell
@@ -202,30 +242,6 @@ servicemeshmemberroll.maistra.io/default created
 ```
 
 Now we have successfully created a ServiceMeshMemberRoll which will cause a new service mesh to be deployed into the istio-system project. let’s move on to deploy our application to our service mesh.
-
-- #### Deploy application services
-
-The following scripts will deploy our inventory and catalog service:
-```shell
-sh ./demo/istio/scripts/deploy-inventory.sh  && \
-sh ./demo/istio/scripts/deploy-catalog.sh 3m
-```
-
-Let's check if our application is running:
-```shell
-oc get pods -n catalog --field-selector status.phase=Running &&\
-oc get pods -n inventory --field-selector status.phase=Running
-```
-The output should be similar to this:
-```shell
-NAME                         READY   STATUS    RESTARTS   AGE
-catalog-database-1-fbnws     1/1     Running   0          3m53s
-catalog-springboot-1-c57cw   1/1     Running   0          3m8s
-NAME                         READY   STATUS    RESTARTS   AGE
-inventory-1-qmvsc            1/1     Running   0          4m33s
-inventory-database-1-z96f5   1/1     Running   0          5m35s
-```
-All seems good. All our pods are running 1 out of 1 container.
 
 - #### Enabling automatic sidecar injection
 
@@ -235,31 +251,30 @@ In addition, this method requires fewer privileges and does not conflict with ot
 
 First, we'll annotate our database deployments and wait for them to roll out new pods:
 ```shell
-oc patch dc/inventory-database -n inventory --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc patch dc/catalog-database -n catalog --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout status -w dc/inventory-database -n inventory && \
-oc rollout status -w dc/catalog-database -n catalog
+oc patch deployment/inventory-database -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n coolstore-inventory && \
+oc patch deployment/catalog-database -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n coolstore-catalog && \
+oc rollout status -w deployment/inventory-database -n coolstore-inventory && \
+oc rollout status -w deployment/catalog-database -n coolstore-catalog
 ```
 Next, let’s add sidecars to our services and wait for them to be re-deployed:
 ```shell
-oc patch dc/inventory -n inventory --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout latest dc/inventory -n inventory && \
-oc patch dc/catalog-springboot -n catalog --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout status -w dc/inventory -n inventory && \
-oc rollout status -w dc/catalog-springboot -n catalog
+oc patch deployment/inventory -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n coolstore-inventory && \
+oc patch deployment/catalog -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n coolstore-catalog
+oc rollout status -w deployment/inventory -n coolstore-inventory && \
+oc rollout status -w deployment/catalog -n coolstore-catalog
 ```
 This should also take about 1 minute to finish. 
 
 When it’s done, verify that the inventory-database is running with 2 containers (2/2 in the READY column) with this command:
 ```shell
-oc get pods -n catalog --field-selector status.phase=Running &&\
-oc get pods -n inventory --field-selector status.phase=Running
+oc get pods -n coolstore-catalog --field-selector status.phase=Running &&\
+oc get pods -n coolstore-inventory --field-selector status.phase=Running
 ```
 The output should be similar to this:
 ```shell
 NAME                         READY   STATUS    RESTARTS   AGE
 catalog-database-2-qglw8     2/2     Running   0          89s
-catalog-springboot-2-jhxtf   2/2     Running   0          36s
+catalog-2-jhxtf   2/2     Running   0          36s
 NAME                         READY   STATUS    RESTARTS   AGE
 inventory-2-pqc2s            2/2     Running   0          38s
 inventory-database-2-pmnnp   2/2     Running   0          90s
@@ -280,14 +295,14 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    istio: ingressgateway # use istio default controller
+    istio: ingressgateway
   servers:
     - port:
         number: 80
         name: http
         protocol: HTTP
       hosts:
-        - $GATEWAY_URL
+        - "*"
 EOF
 ```
 The output should be similar to this:
@@ -302,14 +317,15 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: catalog-default
-  namespace: catalog
+  namespace: coolstore-catalog
 spec:
   hosts:
     - $GATEWAY_URL
   gateways:
-    - istio-system/coolstore-gateway
+    - istio-system/coolstore-gateway 
   http:
-    - match:
+    - name: service-route
+      match:
         - uri:
             exact: /services/products
         - uri:
@@ -318,7 +334,18 @@ spec:
             exact: /
       route:
         - destination:
-            host: catalog-springboot
+            host: catalog
+            port:
+              number: 8080
+    - name: frontend-route
+      match:
+        - uri:
+            prefix: /catalog
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: catalog
             port:
               number: 8080
 EOF
@@ -335,18 +362,28 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-default
-  namespace: inventory
+  namespace: coolstore-inventory
 spec:
   hosts:
-    - inventory.inventory.svc.cluster.local
+    - $GATEWAY_URL
   gateways:
     - istio-system/coolstore-gateway
   http:
-    - match:
+    - name: service-route
+      match:
         - uri:
             exact: /services/inventory
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+    - name: frontend-route
+      match:
         - uri:
-            exact: /
+            prefix: /inventory
+      rewrite:
+        uri: /
       route:
         - destination:
             host: inventory
@@ -567,39 +604,25 @@ Two types of faults can be injected:
 - Delays are timing failures. They mimic increased network latency or an overloaded upstream service.
 - Aborts are crash failures. They mimic failures in upstream services. Aborts usually manifest in the form of HTTP error codes or TCP connection failures.
 
-To test our application microservices for resiliency, we will inject a failure in 50% of the requests to the inventory service, causing the service to appear to fail (and return HTTP 5xx errors) half of the time.
+To test our application microservices for resiliency, we will inject a failure to the inventory service, causing the service to appear to fail and return HTTP 5xx errors.
 
-Note: Make sure our GATEWAY_URL is available
-```shell
-export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')
-```
-
-Let’s inject a failure (500 status) in 50% of requests to inventory microservices.
-Before creating a new inventory-fault VirtualService, we need to delete the existing inventory-default virtualService.
-```shell
-oc delete virtualservice/inventory-default -n inventory 
-```
-
+- #### Let’s inject a failure (500 status) in 10% of requests to inventory microservices.
 ```shell
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-fault
-  namespace: inventory
+  namespace: coolstore-inventory
 spec:
   hosts:
-#  - catalog-springboot.catalog.svc.cluster.local
-  - catalog-default
-#  - inventory.inventory.svc.cluster.local
-#  gateways:
-#  - istio-system/coolstore-gateway
+  - inventory
   http:
   - fault:
       abort:
         httpStatus: 500
         percentage:
-          value: 50
+          value: 10
     route:
     - destination:
         host: inventory
@@ -613,8 +636,7 @@ You will see that the Status of CoolStore Inventory continues to change between 
 
 ![OpenShift Service Mesh](../../graphics/service-mesh-11.jpeg)
 
-Back on the Kiali Graph page and you will see red traffic from istio-ingressgateway as well as around 50% of requests are displayed as 5xx on the right side, HTTP Traffic. 
-It may not be exactly 50% since some traffic is coming from the catalog and ingress gateway at the same time, but it will approach 50% over time.
+Back on the Kiali Graph page and you will see red traffic from istio-ingressgateway as requests are displayed as 5xx on the right side, HTTP Traffic. 
 
 ![OpenShift Service Mesh](../../graphics/service-mesh-12.jpeg)
 
@@ -632,17 +654,16 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-fault-delay
+  namespace: coolstore-inventory
 spec:
   hosts:
-  - "${GATEWAY_URL}"
-  gateways:
-  - catalog/catalog-gateway
+  - inventory
   http:
     - fault:
          delay:
            fixedDelay: 5s
            percentage:
-             value: 100
+             value: 10
       route:
         - destination:
             host: inventory
@@ -651,17 +672,17 @@ spec:
 EOF
 ```
 
-Go to the Kiali Graph you opened earlier and you will see that the green traffic from istio-ingressgateway is delayed for requests coming from inventory service.
+Go to the Kiali Graph you opened earlier, and you will see that the green traffic from istio-ingressgateway is delayed for requests coming from inventory service.
 
-Click on the "edge" (the line between istio-ingressgateway and inventory) and then scroll to the bottom of the right-side graph showing the HTTP Request Response Time. Hover over the black average data point to confirm that the average response time is about 5000ms (5 seconds) as expected
+Click on the "edge" (the line between istio-ingressgateway and inventory) and then scroll to the bottom of the right-side graph showing the HTTP Request Response Time. 
+Hover over the black average data point to confirm that the average response time is about 5000ms (5 seconds) as expected
 
 ![OpenShift Service Mesh](../../graphics/service-mesh-13.jpeg)
 
-Before we will move to the next step, clean up the fault injection and set the default virtual service once again using these commands in a Terminal:
+Before we move to the next step, clean up the fault injection:
 
 ```shell
-oc delete virtualservice/inventory-fault-delay -n inventory && \
-oc create -f ./demo/inventory/rules/inventory-default.yaml -n inventory
+oc delete virtualservice/inventory-fault-delay -n inventory
 ```
 
 ### Enable Circuit Breaker
@@ -678,26 +699,31 @@ Istio supports various types of conditions that would trigger a circuit break:
 - Cluster maximum requests: The maximum number of requests that can be outstanding to all hosts in a cluster at any given time.
 - Cluster maximum active retries: The maximum number of retries that can be outstanding to all hosts in a cluster at any given time.
 
-Each circuit breaking limit is configurable and tracked per upstream cluster and priority basis. This allows different components of the distributed system to be tuned independently and have different limits. See Envoy's circuit breaker documentation for more details.
+Each circuit breaking limit is configurable and tracked per upstream cluster and priority basis. 
+This allows different components of the distributed system to be tuned independently and have different limits. 
+See Envoy's circuit breaker documentation for more details.
 
 Let's add a circuit breaker to the calls to the Inventory service.
 Instead of using a VirtualService object, circuit breakers in Istio are defined as DestinationRule objects.
 DestinationRule defines policies that apply to traffic intended for a service after routing has occurred.
 These rules specify configuration for load balancing, connection pool size from the sidecar, and outlier detection settings to detect and evict unhealthy hosts from the load balancing pool.
 
-Run the following command to enable circuit breaking:
+- #### Run the following command to enable circuit breaking:
+
 ```shell
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: inventory-cb
+  namespace: coolstore-inventory
 spec:
   host: inventory
   trafficPolicy:
     connectionPool:
       tcp:
         maxConnections: 1
+        connectTimeout: 30ms
       http:
         http1MaxPendingRequests: 1
         maxRequestsPerConnection: 1
@@ -720,43 +746,68 @@ Execute this to simulate a number of users attempting to access the gateway URL 
 
 ```shell
 export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}') && \
-siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
+siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL/services/products
 ```
-
+- Alternative to siege is utility hey
 ```shell
-siege --verbose --time=1M --concurrent=10 'http://'$GATEWAY_URL
+hey -z 60s -c 200 -disable-keepalive 'http://'$GATEWAY_URL/services/products
 ```
 This will run for 1 minute, and you’ll likely encounter errors like [error] Failed to make an SSL connection: 5 which indicates that the circuit breaker is tripping and stopping the flood of requests from going to the service.
 
 ![OpenShift Service Mesh](../../graphics/service-mesh-13.jpeg)
 
+---
 
+## Key takeaways
 
-oc delete virtualservice inventory-default
+So, what are the major benefits of using Service Mesh?:
+
+- From **business perspective** it's quicker time to market
+Less time is wasted on writing non-functional code that doesn't add business value.
+So, we are able to release our code much quicker!
+
+- From **development perspective** it’s simplified development.
+Developers are spending less time on plumbing their services.
+This means less code to write and more time to focus on the real use case.
+
+- From **operations perspective** it’s a more reliable and uniform system.
+Less room for human error, more insight in what is happening “under the hood” and more confidence that a system runs in a security maner.
+
+What Red Hat OpenShift Service Mesh provides
+
+#### Support for your security needs:
+
+Red Hat OpenShift Service Mesh provides out-of-the-box security for your distributed applications.
+
+- Connect services securely by default with transparent TLS encryption
+- Enforce a "zero trust" or "need to know" network security model with fine-grained traffic policies based on application identities
+
+#### Traffic management
+Control the flow of traffic and API calls between your services with effective traffic management, which makes your applications more resilient.
+
+- Manage traffic to facilitate failovers, canary deployments, traffic mirroring, A/B testing, and more
+- Improve service reliability with automatic request retries, timeouts, and circuit breakers
+
+#### Observability
+Red Hat OpenShift Service Mesh provides a clear and intuitive end-to-end view of your services.
+
+- Use service metrics to monitor application health, reliability, and performance
+- Use distributed tracing to troubleshoot and isolate bottlenecks in end-to-end request paths
+
+Read more about [What is Red Hat Service Mesh](https://www.redhat.com/en/technologies/cloud-computing/openshift/what-is-openshift-service-mesh) in this blog. 
+
+---
+
+## Let's clean things up
 
 ```shell
-oc apply -f - << EOF
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: inventory-default
-spec:
-  hosts:
-  - "${GATEWAY_URL}"
-  gateways:
-  - catalog/catalog-gateway
-  http:
-    - match:
-        - uri:
-            exact: /services/inventory
-        - uri:
-            exact: /
-      route:
-        - destination:
-            host: inventory
-            port:
-              number: 80
-EOF
+oc delete all -l app=inventory -n coolstore-inventory && \
+oc delete all -l app=inventory-database -n coolstore-inventory && \
+oc delete all -l app=catalog -n coolstore-catalog && \
+oc delete all -l app=catalog-database -n coolstore-catalog && \
+oc delete gateway coolstore-gateway -n istio-system && \
+oc delete project coolstore-inventory && \
+oc delete project coolstore-catalog
 ```
 
 

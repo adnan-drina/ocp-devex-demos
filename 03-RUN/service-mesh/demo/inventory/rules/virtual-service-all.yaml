@@ -1,25 +1,29 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: catalog-service
+  name: coolstore-service
+  namespace: coolstore-inventory
 spec:
   hosts:
-    - catalog-springboot
+    - inventory
   http:
     - route:
         - destination:
-            host: catalog-springboot
-            port: 8080
+            host: inventory
+            port:
+              number: 80
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: catalog-database
+  name: inventory-database
+  namespace: coolstore-inventory
 spec:
   hosts:
-    - catalog-database
+    - inventory-database
   http:
     - route:
         - destination:
-            host: catalog-database
-            port: 5432
+            host: inventory-database
+            port:
+              number: 5432

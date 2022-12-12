@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: catalog-service
+  namespace: catalog
+spec:
+  hosts:
+    - catalog-springboot
+  gateways:
+    - istio-system/coolstore-gateway
+  http:
+    - route:
+        - destination:
+            host: catalog-springboot
+            port:
+              number: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: catalog-database
+  namespace: catalog
+spec:
+  hosts:
+    - catalog-database
+  gateways:
+    - istio-system/coolstore-gateway
+  http:
+    - route:
+        - destination:
+            host: catalog-database
+            port:
+              number: 5432

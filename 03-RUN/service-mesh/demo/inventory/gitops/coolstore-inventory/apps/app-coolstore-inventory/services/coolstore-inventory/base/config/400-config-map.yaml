@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coolstore-inventory-config
+  namespace: coolstore-inventory
+data:
+  DATASOURCE_URL: 'jdbc:postgresql://inventory-database:5432/inventory'
+  DATASOURCE_USERNAME: inventory
+  DATASOURCE_PASSWORD: mysecretpassword

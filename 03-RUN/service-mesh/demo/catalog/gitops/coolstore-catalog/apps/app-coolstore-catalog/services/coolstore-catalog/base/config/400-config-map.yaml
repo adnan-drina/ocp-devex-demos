@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coolstore-catalog-config
+  namespace: coolstore-catalog
+data:
+  DATASOURCE_URL: 'jdbc:postgresql://catalog-database:5432/catalog'
+  DATASOURCE_USERNAME: catalog
+  DATASOURCE_PASSWORD: mysecretpassword
+  INVENTORY_URL: 'inventory.coolstore-inventory.svc.cluster.local'

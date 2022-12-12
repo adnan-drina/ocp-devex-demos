@@ -1,5 +1,4 @@
 apiVersion: networking.istio.io/v1alpha3
-apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: coolstore-gateway
@@ -13,20 +12,21 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - $GATEWAY_URL
+        - "*"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: catalog-default
-  namespace: catalog
+  namespace: coolstore-catalog
 spec:
   hosts:
-    - "*"
+    - $GATEWAY_URL
   gateways:
     - istio-system/coolstore-gateway
   http:
-    - match:
+    - name: default-route
+      match:
         - uri:
             exact: /services/products
         - uri:
@@ -35,6 +35,17 @@ spec:
             exact: /
       route:
         - destination:
-            host: catalog-springboot
+            host: catalog
+            port:
+              number: 8080
+    - name: frontend-route
+      match:
+        - uri:
+            prefix: /catalog
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: catalog
             port:
               number: 8080

@@ -2,17 +2,28 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: inventory-default
+  namespace: coolstore-inventory
 spec:
   hosts:
-    - inventory.inventory.svc.cluster.local
+    - $GATEWAY_URL
   gateways:
     - istio-system/coolstore-gateway
   http:
-    - match:
+    - name: service-route
+      match:
         - uri:
             exact: /services/inventory
+      route:
+        - destination:
+            host: inventory
+            port:
+              number: 80
+    - name: frontend-route
+      match:
         - uri:
-            exact: /
+            prefix: /inventory
+      rewrite:
+        uri: /
       route:
         - destination:
             host: inventory
