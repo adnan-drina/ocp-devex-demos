@@ -158,9 +158,8 @@ wasm-cacher-istio-system-555fd6f7df-6qrnm   1/1     Running   0          2m1s
 In this demo, we'll visualize our service mesh using Kiali, Prometheus, and Grafana, and we'll see how to configure basic Istio functionalities such as Gateway and VirtualService.
 
 - [Install demo application and add it to the mesh](#install-demo-application-and-add-it-to-the-mesh)
-  - [Create application namespaces](#create-application-namespaces)
+  - [Deploy application services](#deploy-demo-application)
   - [Add application namespaces to the mesh](#create-servicemeshmemberroll)
-  - [Deploy application services](#deploy-application-services)
   - [Enabling automatic sidecar injection](#enabling-automatic-sidecar-injection)
   - [Expose a service](#expose-a-service)
 - [Observe your services with Kiali, Prometheus, Jaeger and Grafana](#observe-your-services-with-kiali-prometheus-jaeger-and-grafana)
@@ -175,6 +174,8 @@ It's a typical microservice application that could be installed on any Kubernete
 Our demo application consists of two microservices:
 1. **Catalog** - Spring Boot project
 2. **Inventory** - Quarkus project
+
+#### Deploy demo application 
 
 - #### Create Coolstore Catalog service
 ```shell
@@ -228,7 +229,8 @@ inventory-database-1-z96f5   1/1     Running   0          5m35s
 ```
 All seems good. All our pods are running 1 out of 1 container.
 
-- #### Create ServiceMeshMemberRoll
+#### Create ServiceMeshMemberRoll
+
 For applications to communicate with each other across different namespaces, we need to ensure that the ServiceMeshMemberRoll is created.
 
 ServiceMeshMemberRoll will integrate out application namespaces with service mesh namespaces allowing service communication across the mesh.
@@ -258,7 +260,7 @@ servicemeshmemberroll.maistra.io/default created
 
 Now we have successfully created a ServiceMeshMemberRoll which will cause a new service mesh to be deployed into the istio-system project. let’s move on to deploy our application to our service mesh.
 
-- #### Enabling automatic sidecar injection
+#### Enabling automatic sidecar injection
 
 Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application's pod to provide Service Mesh capabilities to the application. 
 We'll enable automatic sidecar injection using the annotation.
@@ -306,7 +308,18 @@ inventory-database-2-pmnnp   2/2     Running   0          90s
 Now, all our pods are running 2 out of 2 container.
 In one container runs our service and the other the istio-proxy.
 
-- #### Expose a service
+Before we go further, let's save our gateway URL and port number as environment variables so we can easily access them later.
+
+- #### Export the Gateway URL
+```shell
+export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')
+```
+- #### Export the port number
+```shell
+export TARGET_PORT=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.port.targetPort}')
+```
+
+#### Expose a service
 
 Next, let’s create an ingress gateway to allow ingress traffic to the mesh:
 ```yaml
@@ -422,15 +435,6 @@ virtualservice.networking.istio.io/inventory-default created
 - #### Let's test it!
 
 Test that the gateway and VirtualService have been set correctly.
-
-Set the Gateway URL.
-```shell
-export GATEWAY_URL=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.host}')
-```
-Set the port number. 
-```shell
-export TARGET_PORT=$(oc -n istio-system get route istio-ingressgateway -o jsonpath='{.spec.port.targetPort}')
-```
 
 Test a page that has been explicitly exposed.
 ```shell
