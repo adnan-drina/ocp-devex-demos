@@ -788,7 +788,7 @@ This will run for 1 minute, and you’ll likely encounter errors like [error] Fa
 
 So, what are the major benefits of using Service Mesh?:
 
-- From **business perspective** it's quicker time to market
+- From **business perspective** it's quicker time to market.<br/>
   Less time is wasted on writing non-functional code that doesn't add business value.
   So we can release our applications much quicker!
 
