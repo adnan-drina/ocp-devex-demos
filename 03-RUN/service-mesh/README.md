@@ -233,9 +233,24 @@ For applications to communicate with each other across different namespaces, we 
 
 ServiceMeshMemberRoll will integrate out application namespaces with service mesh namespaces allowing service communication across the mesh.
 
+```yaml
+oc apply -f - << EOF
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+    - coolstore-catalog
+    - coolstore-inventory
+EOF
+```
+or
 ```shell
 oc create -f ./demo/istio/service-mesh-member-roll.yaml
 ```
+
 The output should be similar to this:
 ```shell
 servicemeshmemberroll.maistra.io/default created
@@ -245,8 +260,17 @@ Now we have successfully created a ServiceMeshMemberRoll which will cause a new 
 
 - #### Enabling automatic sidecar injection
 
-Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application's pod to provide Service Mesh capabilities to the application. We'll enable automatic sidecar injection using the annotation.
-This annotation ensures that your application contains the appropriate configuration for the Service Mesh upon deployment. 
+Red Hat OpenShift Service Mesh relies on a proxy sidecar within the application's pod to provide Service Mesh capabilities to the application. 
+We'll enable automatic sidecar injection using the annotation.
+```yaml
+...
+metadata:
+  annotations:
+    sidecar.istio.io/inject: "true"
+...
+```
+
+This annotation ensures that our application gets an istio-proxy side care container injected into the pod upon deployment. 
 In addition, this method requires fewer privileges and does not conflict with other OpenShift capabilities, such as builder pods.
 
 First, we'll annotate our database deployments and wait for them to roll out new pods:
@@ -265,7 +289,7 @@ oc rollout status -w deployment/catalog -n coolstore-catalog
 ```
 This should also take about 1 minute to finish. 
 
-When it’s done, verify that the inventory-database is running with 2 containers (2/2 in the READY column) with this command:
+When it’s done, verify that our services are now running with 2 containers (2/2 in the READY column):
 ```shell
 oc get pods -n coolstore-catalog --field-selector status.phase=Running &&\
 oc get pods -n coolstore-inventory --field-selector status.phase=Running
@@ -274,19 +298,18 @@ The output should be similar to this:
 ```shell
 NAME                         READY   STATUS    RESTARTS   AGE
 catalog-database-2-qglw8     2/2     Running   0          89s
-catalog-2-jhxtf   2/2     Running   0          36s
+catalog-2-jhxtf              2/2     Running   0          36s
 NAME                         READY   STATUS    RESTARTS   AGE
 inventory-2-pqc2s            2/2     Running   0          38s
 inventory-database-2-pmnnp   2/2     Running   0          90s
 ```
 Now, all our pods are running 2 out of 2 container.
-In one container is our service and in the other is the istio-proxy running.
+In one container runs our service and the other the istio-proxy.
 
 - #### Expose a service
 
 Next, let’s create an ingress gateway to allow ingress traffic to the mesh:
-
-```shell
+```yaml
 oc create -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -311,7 +334,7 @@ gateway.networking.istio.io/coolstore-gateway created
 ```
 
 And let's create a virtual service to send incoming traffic to our app catalog service:
-```shell
+```yaml
 oc create -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -356,7 +379,7 @@ virtualservice.networking.istio.io/catalog-default created
 ```
 
 And a virtual service for our inventory service
-```shell
+```yaml
 oc create -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -607,7 +630,7 @@ Two types of faults can be injected:
 To test our application microservices for resiliency, we will inject a failure to the inventory service, causing the service to appear to fail and return HTTP 5xx errors.
 
 - #### Let’s inject a failure (500 status) in 10% of requests to inventory microservices.
-```shell
+```yaml
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -648,7 +671,7 @@ oc delete virtualservice/inventory-fault -n inventory
 ```
 
 Then create a new virtualservice
-```shell
+```yaml
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -710,7 +733,7 @@ These rules specify configuration for load balancing, connection pool size from 
 
 - #### Run the following command to enable circuit breaking:
 
-```shell
+```yaml
 oc apply -f - << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
